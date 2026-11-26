@@ -23,12 +23,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.data.gemini.GeminiResult
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
+import com.miguelaetxio.mia2f.ui.keytransfer.KeyQrDialog
+import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.update.UpdateCheckSection
 
 /**
@@ -49,6 +52,9 @@ fun SettingsScreen(
     // Typed text only lives in memory and is cleared on save.
     var typedKey by remember { mutableStateOf("") }
     val testState by viewModel.testState.collectAsState()
+    val context = LocalContext.current
+    var qrKey by remember { mutableStateOf<String?>(null) }
+    var scanError by remember { mutableStateOf<String?>(null) }
     var testSentence by remember { mutableStateOf(DEFAULT_TEST_SENTENCE) }
 
     Column(
@@ -92,6 +98,30 @@ fun SettingsScreen(
                     Text("Borrar clave")
                 }
             }
+        }
+        if (keySuffix != null) {
+            OutlinedButton(onClick = { qrKey = viewModel.keyForTransfer() }) {
+                Text("Pasar la clave a otro móvil")
+            }
+        } else {
+            OutlinedButton(
+                onClick = {
+                    scanError = null
+                    scanKeyQr(
+                        context = context,
+                        onKey = viewModel::saveKey,
+                        onError = { scanError = it },
+                    )
+                },
+            ) {
+                Text("Escanear clave desde otro móvil")
+            }
+        }
+        scanError?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+        qrKey?.let { key ->
+            KeyQrDialog(apiKey = key, onDismiss = { qrKey = null })
         }
 
         HorizontalDivider()

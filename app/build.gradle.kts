@@ -85,4 +85,7 @@ dependencies {
 
     implementation(libs.markdown.renderer)
     implementation(libs.markdown.renderer.m3)
+
+    implementation(libs.play.services.code.scanner)
+    implementation(libs.zxing.core)
 }

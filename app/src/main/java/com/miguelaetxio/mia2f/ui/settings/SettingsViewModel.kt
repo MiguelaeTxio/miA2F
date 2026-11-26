@@ -74,6 +74,13 @@ class SettingsViewModel @Inject constructor(
     }
 
     /**
+     * Decrypted key, only to draw the transfer QR on demand.
+     * ---
+     * Clave descifrada, solo para dibujar el QR de traspaso a petición.
+     */
+    fun keyForTransfer(): String? = apiKeyStore.readKey()
+
+    /**
      * Deletes the saved key.
      * ---
      * Borra la clave guardada.

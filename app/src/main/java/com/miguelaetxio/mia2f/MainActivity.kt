@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,11 +19,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.ui.profile.ProfileSetupScreen
 import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
+import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
+import com.miguelaetxio.mia2f.ui.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -69,7 +73,11 @@ private fun AppRoot(
 private fun HomeScreen(
     studentName: String,
     onOpenSettings: () -> Unit,
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
 ) {
+    val keySuffix by settingsViewModel.keySuffix.collectAsState()
+    val context = LocalContext.current
+    var scanError by rememberSaveable { mutableStateOf<String?>(null) }
     Column(
         modifier = Modifier.padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -82,6 +90,42 @@ private fun HomeScreen(
             text = "Bonjour, $studentName !",
             style = MaterialTheme.typography.titleLarge,
         )
+        if (keySuffix == null) {
+            // Primer arranque en el segundo móvil: la clave llega por QR
+            // desde el móvil que ya la tiene, sin entrar en AI Studio.
+            // ---
+            // First run on the second phone: the key arrives by QR from
+            // the phone that already has it, with no AI Studio needed.
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        "Falta un último paso: en el otro móvil, abre " +
+                            "miA2F → Ajustes → «Pasar la clave a otro " +
+                            "móvil», y aquí pulsa este botón y apunta la " +
+                            "cámara al código que aparece.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(
+                        onClick = {
+                            scanError = null
+                            scanKeyQr(
+                                context = context,
+                                onKey = settingsViewModel::saveKey,
+                                onError = { scanError = it },
+                            )
+                        },
+                    ) {
+                        Text("Escanear clave desde otro móvil")
+                    }
+                    scanError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
+        }
         Button(onClick = onOpenSettings) {
             Text("Ajustes")
         }
