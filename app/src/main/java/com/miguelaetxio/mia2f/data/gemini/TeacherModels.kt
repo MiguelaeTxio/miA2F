@@ -31,6 +31,20 @@ data class CorrectionError(
 )
 
 /**
+ * Gemini's comment on a recording: what it actually hears, whether it
+ * is right, the comment in Spanish and the errors by concept.
+ * ---
+ * Comentario de Gemini sobre una grabación: lo que oye de verdad, si
+ * está bien, el comentario en castellano y los errores por concepto.
+ */
+data class PronunciationFeedback(
+    val heard: String,
+    val isCorrect: Boolean,
+    val explanation: String,
+    val errors: List<CorrectionError>,
+)
+
+/**
  * Result of a teacher call. Offline is kept apart so the screen can
  * show a plain message instead of the exception text.
  * ---

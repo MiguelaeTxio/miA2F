@@ -284,6 +284,176 @@ class GeminiRepository @Inject constructor(
         }
     }
 
+    /**
+     * Asks Gemini for the model sentences of a pronunciation practice
+     * on the unit: short, natural, with the unit's vocabulary and
+     * grammar, favouring its phonetics concepts. Never throws.
+     * ---
+     * Pide a Gemini las frases modelo de una práctica de pronunciación
+     * de la unidad: cortas, naturales, con el vocabulario y la
+     * gramática de la unidad, dando preferencia a sus conceptos de
+     * fonética. Nunca lanza.
+     */
+    suspend fun generatePronunciationSentences(
+        unit: CourseUnit,
+        progressSummary: String,
+    ): TeacherResult<List<GeneratedExercise>> {
+        val conceptIds = unit.concepts.map { it.id }
+        val prompt = "Unidad ${unit.number}: ${unit.title}\n\n" +
+            "Conceptos de la unidad:\n" +
+            describeConcepts(unit.concepts) + "\n\n" +
+            "Progreso del alumno:\n$progressSummary\n\n" +
+            "Propón $SENTENCE_COUNT frases en francés para practicar la " +
+            "pronunciación: el alumno las escuchará y las repetirá en voz " +
+            "alta. Cada frase, de 4 a 12 palabras, natural y propia de " +
+            "un A2, con el vocabulario y la gramática de la unidad. Da " +
+            "prioridad a los conceptos de fonética (phonetics) de la " +
+            "lista y a los que están en observación. En «conceptId» va " +
+            "el concepto de la lista que más trabaja la frase y en " +
+            "«sentence», solo la frase en francés."
+        val schema = mapOf(
+            "type" to "object",
+            "properties" to mapOf(
+                "sentences" to mapOf(
+                    "type" to "array",
+                    "minItems" to SENTENCE_COUNT,
+                    "maxItems" to SENTENCE_COUNT,
+                    "items" to mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "conceptId" to mapOf(
+                                "type" to "string",
+                                "enum" to conceptIds,
+                            ),
+                            "sentence" to mapOf("type" to "string"),
+                        ),
+                        "required" to listOf("conceptId", "sentence"),
+                    ),
+                ),
+            ),
+            "required" to listOf("sentences"),
+        )
+        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+            is TeacherResult.Success -> {
+                val parsed = parse(result.value, SentencesJson::class.java)
+                val sentences = parsed?.sentences.orEmpty().mapNotNull {
+                    val conceptId = it.conceptId
+                    val text = it.sentence?.trim()
+                    if (conceptId in conceptIds && !text.isNullOrEmpty()) {
+                        GeneratedExercise(conceptId!!, text)
+                    } else {
+                        null
+                    }
+                }
+                if (sentences.isEmpty()) {
+                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                } else {
+                    TeacherResult.Success(sentences)
+                }
+            }
+            is TeacherResult.Error -> result
+            TeacherResult.Offline -> TeacherResult.Offline
+        }
+    }
+
+    /**
+     * Sends the student's recording of a model sentence and returns
+     * Gemini's comment on the real audio. Errors whose concept is not
+     * in the unit are dropped. Never throws.
+     * ---
+     * Envía la grabación del alumno de una frase modelo y devuelve el
+     * comentario de Gemini sobre el audio real. Se descartan los
+     * errores cuyo concepto no es de la unidad. Nunca lanza.
+     */
+    suspend fun evaluatePronunciation(
+        unit: CourseUnit,
+        sentence: GeneratedExercise,
+        audioBase64: String,
+        audioMimeType: String,
+    ): TeacherResult<PronunciationFeedback> {
+        val conceptIds = unit.concepts.map { it.id }
+        val prompt = "Conceptos de la unidad:\n" +
+            describeConcepts(unit.concepts) +
+            "\n\nFrase modelo (concepto ${sentence.conceptId}):\n" +
+            "${sentence.prompt}\n\n" +
+            "El audio adjunto es la grabación del alumno diciendo esa " +
+            "frase. Básate solo en lo que se oye en el audio. En «heard» " +
+            "escribe en francés lo que realmente se oye. «isCorrect» es " +
+            "true solo si la pronunciación es clara y correcta para un " +
+            "A2. En «explanation», en castellano, comenta cada sonido, " +
+            "liaison, encadenamiento o entonación que no esté bien, y " +
+            "cómo decirlo; si está bien, dilo. En «errors», un elemento " +
+            "por cada error, con el concepto de la lista al que " +
+            "corresponde (preferentemente uno de fonética) y una " +
+            "descripción breve en castellano. Si el audio está vacío, " +
+            "cortado o no se entiende, dilo en «explanation», deja " +
+            "«errors» vacío e «isCorrect» en false: no supongas lo que " +
+            "no se oye."
+        val schema = mapOf(
+            "type" to "object",
+            "properties" to mapOf(
+                "heard" to mapOf("type" to "string"),
+                "isCorrect" to mapOf("type" to "boolean"),
+                "explanation" to mapOf("type" to "string"),
+                "errors" to mapOf(
+                    "type" to "array",
+                    "items" to mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "conceptId" to mapOf(
+                                "type" to "string",
+                                "enum" to conceptIds,
+                            ),
+                            "description" to mapOf("type" to "string"),
+                        ),
+                        "required" to listOf("conceptId", "description"),
+                    ),
+                ),
+            ),
+            "required" to listOf(
+                "heard", "isCorrect", "explanation", "errors",
+            ),
+        )
+        val audio = InlineData(mimeType = audioMimeType, data = audioBase64)
+        return when (
+            val result = call(TEACHER_INSTRUCTION, prompt, schema, audio)
+        ) {
+            is TeacherResult.Success -> {
+                val parsed = parse(result.value, FeedbackJson::class.java)
+                val heard = parsed?.heard?.trim()
+                val isCorrect = parsed?.isCorrect
+                val explanation = parsed?.explanation?.trim()
+                if (heard == null || isCorrect == null ||
+                    explanation.isNullOrEmpty()
+                ) {
+                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                } else {
+                    val errors = parsed?.errors.orEmpty().mapNotNull {
+                        val conceptId = it.conceptId
+                        val description = it.description?.trim()
+                        if (conceptId in conceptIds &&
+                            !description.isNullOrEmpty()
+                        ) {
+                            CorrectionError(conceptId!!, description)
+                        } else {
+                            null
+                        }
+                    }
+                    TeacherResult.Success(
+                        PronunciationFeedback(
+                            heard = heard,
+                            isCorrect = isCorrect && errors.isEmpty(),
+                            explanation = explanation,
+                            errors = errors,
+                        )
+                    )
+                }
+            }
+            is TeacherResult.Error -> result
+            TeacherResult.Offline -> TeacherResult.Offline
+        }
+    }
+
     private fun describeConcepts(concepts: List<Concept>): String =
         concepts.joinToString("\n") { concept ->
             "- ${concept.id} — ${concept.title}: ${concept.explanation}" +
@@ -310,6 +480,7 @@ class GeminiRepository @Inject constructor(
         instruction: String,
         userText: String,
         schema: Map<String, Any>?,
+        audio: InlineData? = null,
     ): TeacherResult<String> = withContext(Dispatchers.IO) {
         val apiKey = apiKeyStore.readKey()
             ?: return@withContext TeacherResult.Error(
@@ -320,7 +491,13 @@ class GeminiRepository @Inject constructor(
                 parts = listOf(Part(text = instruction)),
             ),
             contents = listOf(
-                Content(role = "user", parts = listOf(Part(text = userText))),
+                Content(
+                    role = "user",
+                    parts = listOfNotNull(
+                        Part(text = userText),
+                        audio?.let { Part(inlineData = it) },
+                    ),
+                ),
             ),
             generationConfig = schema?.let {
                 GenerationConfig(
@@ -380,9 +557,21 @@ class GeminiRepository @Inject constructor(
 
     private class ErrorJson(val conceptId: String?, val description: String?)
 
+    private class SentencesJson(val sentences: List<SentenceJson>?)
+
+    private class SentenceJson(val conceptId: String?, val sentence: String?)
+
+    private class FeedbackJson(
+        val heard: String?,
+        val isCorrect: Boolean?,
+        val explanation: String?,
+        val errors: List<ErrorJson>?,
+    )
+
     private companion object {
         const val MODEL_ID = "gemini-3.5-flash"
         const val EXERCISE_COUNT = 5
+        const val SENTENCE_COUNT = 5
         const val PER_CONCEPT_RULES =
             "Escribe exactamente un ejercicio escrito por concepto, bajo " +
                 "la clave de su identificador. Cada ejercicio debe " +

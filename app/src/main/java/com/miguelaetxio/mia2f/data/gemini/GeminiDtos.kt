@@ -1,5 +1,7 @@
 package com.miguelaetxio.mia2f.data.gemini
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Request and response bodies of `models.generateContent` (Gemini
  * Developer API, REST v1beta). Field names follow the official JSON;
@@ -44,6 +46,20 @@ data class Content(
 
 data class Part(
     val text: String? = null,
+    @SerializedName("inline_data") val inlineData: InlineData? = null,
+)
+
+/**
+ * Inline media (H06: the student's recording), base64 data with its
+ * MIME type, as in the official REST example of generateContent.
+ * ---
+ * Contenido multimedia en línea (H06: la grabación del alumno), datos
+ * en base64 con su tipo MIME, como en el ejemplo REST oficial de
+ * generateContent.
+ */
+data class InlineData(
+    @SerializedName("mime_type") val mimeType: String,
+    val data: String,
 )
 
 data class GenerateContentResponse(
