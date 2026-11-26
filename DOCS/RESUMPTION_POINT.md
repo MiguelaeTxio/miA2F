@@ -29,12 +29,6 @@
   poner su nombre, escanear el QR que muestra el móvil de Miguel Ángel
   en Ajustes → «Pasar la clave a otro móvil» y probar la conexión).
   Se hace cuando ella esté disponible; Miguel Ángel avisa.
-- **Android Developer Console:** el paquete `com.miguelaetxio.mia2f`
-  quedó «In review» con la huella SHA-256 dada de alta. Cuando la
-  consola muestre el fragmento de prueba de propiedad para la carpeta
-  de assets, Miguel Ángel lo pega en el chat: se añade a
-  `app/src/main/assets/` con el nombre que indique la consola, se
-  publica una Release y él sube ese APK a la consola.
 
 ## Contexto técnico útil
 
