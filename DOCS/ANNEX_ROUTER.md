@@ -24,7 +24,8 @@ por primera vez.
 |---|---|---|
 | H01 | `DOCS/ANNEX_H01.md` | PAUSADO |
 | H02 | `DOCS/ANNEX_H02.md` | PAUSADO |
-| H03 | `DOCS/ANNEX_H03.md` | ← **EN PROGRESO** |
+| H03 | `DOCS/ANNEX_H03.md` | PAUSADO |
+| H04 | `DOCS/ANNEX_H04.md` | ← **EN PROGRESO** |
 
 ---
 
@@ -43,3 +44,8 @@ por primera vez.
   quedaba en H02). **H02 pasa a PAUSADO** sin trabajo pendiente.
   **H03 (La profesora: sesiones con ejercicios y corrección) abierto
   EN PROGRESO.**
+- **2026-11-26** — PCH explícito de Miguel Ángel («PCH a H04»).
+  **H03 pasa a PAUSADO** con los puntos 1-7 hechos y el punto 8
+  (verificación en su móvil) pendiente: Miguel Ángel decidió probarlo
+  todo al final. **H04 (Evaluación continua y criterio de superación)
+  abierto EN PROGRESO.**

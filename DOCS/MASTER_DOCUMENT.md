@@ -168,6 +168,7 @@ alumno: ejercicios escritos, corrección con el método de
 `FrancaisA2` y registro de cada sesión.
 
 ### Hito 04 — Evaluación continua y criterio de superación
+(Ver `DOCS/ANNEX_H04.md`)
 Pruebas de evaluación continua y criterio para dar un concepto por
 superado (el error deja de aparecer en al menos dos sesiones
 distintas, como en `FrancaisA2`).

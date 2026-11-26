@@ -100,6 +100,36 @@ Drive (H05), pronunciación (H06) y escucha (H07).
 
 ---
 
+## COMPLETADAS EN S2 (2026-11-26)
+
+Puntos 1 a 7 de la hoja de ruta de abajo (que se conserva intacta por
+ser la vigente al pausar el hito), todos con compilación verde en
+GitHub Actions y Release publicada. Detalle y commits en el registro
+de sesiones. Decisiones técnicas:
+
+- `generateContent` v1beta con salida estructurada
+  `generationConfig.responseFormat.text` (`APPLICATION_JSON` +
+  esquema), modelo `gemini-3.5-flash`.
+- Room 2.8.5, base de datos `study.db` en versión 2 (la 2 añade
+  `study_session.kind`, migración `MIGRATION_1_2`), sin exportar
+  esquema.
+- Un concepto cuenta como trabajado cuando se ha **acertado** al menos
+  una vez (`ExerciseDao.correctConceptIds`), no con solo responderlo:
+  necesario para que el test de unidad funcione como se acordó.
+- Pantallas en `ui/lesson/` (clase y test, mismo ViewModel con
+  `start(test)`) y `ui/history/`; cada clase o test usa un ViewModel
+  nuevo (`hiltViewModel(key = …)`), porque sin NavHost vive en la
+  actividad.
+
+Incidencias de prueba real: ninguna. Miguel Ángel hizo una clase
+parcial (2 ejercicios, 1 error real «en Madrid» por «à Madrid») que
+apareció bien en el historial; se corrigió la errata «1 errores».
+
+**Pendiente: punto 8** (verificación en el móvil). Miguel Ángel
+decidió probarlo todo al final.
+
+---
+
 ## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
 
 1. **Verificación previa (§4.5) y método.** Comprobar en la
@@ -178,3 +208,4 @@ Drive (H05), pronunciación (H06) y escucha (H07).
 | S2 | 2026-11-26 | Punto 6 hecho a falta de verificar en el móvil (punto 7): botón «Historial de clases» en el inicio, `HistoryScreen` + `HistoryViewModel` en `ui/history/`. Lista con fecha, unidad, ejercicios hechos, errores y «sin terminar» si la clase no se cerró (consulta `observeSummaries`); detalle con enunciado, respuesta, corrección y errores por concepto. |
 | S2 | 2026-11-26 | Prueba parcial de Miguel Ángel en su móvil: clase de la unidad 1 con 2 ejercicios hechos y 1 error real («en Madrid» por «à Madrid»), visible en el historial como «sin terminar». Propone saltar unidades con tests; se acuerda y se añade como punto 7 (la verificación pasa a ser el 8). |
 | S2 | 2026-11-26 | Punto 7 hecho a falta de verificar en el móvil (punto 8): botón «Hacer test para saltar unidad»; `GeminiRepository.generateTest` con esquema de una propiedad obligatoria por concepto (un ejercicio por concepto, ninguno puede faltar); columna `kind` en `study_session` (`lesson`/`test`, migración 1→2); el test se marca como «Test» en el historial y dice si está superado (todo bien). Para que el salto funcione, el planificador cuenta como trabajado solo el concepto **acertado** al menos una vez (`correctConceptIds`), en clase o en test: los fallados mantienen la unidad. Errata «1 errores» corregida (singular/plural en el historial). |
+| S2 | 2026-11-26 | Miguel Ángel deja la verificación (punto 8) para el final. PCH a H04. |
