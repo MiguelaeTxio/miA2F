@@ -1,5 +1,5 @@
 # MIA2F — ANEXO HITO 01
-# Esqueleto, CI/CD, actualizaciones in-app y conexión con Claude
+# Esqueleto, CI/CD, actualizaciones in-app y conexión con Gemini
 
 *Vive en `DOCS/ANNEX_H01.md` — flujo NewFlow Android. Ver estado en
 `DOCS/ANNEX_ROUTER.md`.*
@@ -10,7 +10,7 @@
 
 Tener miA2F instalada y actualizándose sola en los dos dispositivos,
 con perfil de alumno, clave de API guardada cifrada y una primera
-llamada real a la Claude Messages API que demuestre que la cadena
+llamada real a la API de Gemini que demuestre que la cadena
 completa funciona antes de construir ningún ejercicio.
 
 ---
@@ -26,8 +26,8 @@ completa funciona antes de construir ningún ejercicio.
      (generada el 2026-11-26), para firmar siempre con la misma clave
      y que las actualizaciones no choquen. Huellas en
      `DOCS/SESSION_VARIABLES.md`.
-3. Disponer de una clave de la Claude API (Claude Console). La API se
-   factura aparte de la suscripción de claude.ai; ver
+3. Disponer de una clave de la API de Gemini (Google AI Studio),
+   restringida al paquete y a la huella SHA-1 de miA2F; ver
    `MASTER_DOCUMENT.md` §2.3.
 4. Permiso *Workflows* de la aplicación de Claude en GitHub sobre
    `miA2F`, para poder pushear `.github/workflows/`.
@@ -43,9 +43,9 @@ completa funciona antes de construir ningún ejercicio.
 3. Actualización in-app (patrón de `AppUpdateRepository` de MiMoo,
    apuntando a `miA2FReleases`).
 4. Primer arranque: perfil de alumno (nombre).
-5. Ajustes: introducir la clave de la Claude API y guardarla cifrada.
-6. Botón «Probar conexión» que envía una frase en francés a la
-   Messages API y muestra la corrección devuelta.
+5. Ajustes: introducir la clave de la API de Gemini y guardarla cifrada.
+6. Botón «Probar conexión» que envía una frase en francés a Gemini y
+   muestra la corrección devuelta.
 7. Verificación real en los dos dispositivos.
 
 ---
@@ -54,4 +54,4 @@ completa funciona antes de construir ningún ejercicio.
 
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
-| — | 2026-11-26 | Proyecto inicializado (documentación base). |
+| — | 2026-11-26 | Proyecto inicializado (documentación base). Decidido solo Gemini. Hechos: `miA2FReleases` creado, secrets `RELEASES_REPO_LAST_TOKEN` y `DEBUG_KEYSTORE_BASE64` creados. |
