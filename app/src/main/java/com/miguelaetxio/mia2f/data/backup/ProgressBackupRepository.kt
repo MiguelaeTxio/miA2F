@@ -89,6 +89,31 @@ class ProgressBackupRepository @Inject constructor(
      */
     val isPending: StateFlow<Boolean> = _isPending.asStateFlow()
 
+    private val _isRestoreOfferDismissed = MutableStateFlow(
+        prefs.getBoolean(KEY_LINKED, false) ||
+            prefs.getBoolean(KEY_OFFER_DISMISSED, false)
+    )
+
+    /**
+     * True once the "already used miA2F on another phone?" offer is no
+     * longer needed: answered, or this phone already linked to Drive.
+     * ---
+     * True cuando ya no hace falta la oferta «¿ya usabas miA2F en otro
+     * móvil?»: contestada, o este móvil ya enlazado con Drive.
+     */
+    val isRestoreOfferDismissed: StateFlow<Boolean> =
+        _isRestoreOfferDismissed.asStateFlow()
+
+    /**
+     * The student says this phone starts from scratch.
+     * ---
+     * El alumno dice que este móvil empieza de cero.
+     */
+    fun dismissRestoreOffer() {
+        prefs.edit().putBoolean(KEY_OFFER_DISMISSED, true).apply()
+        _isRestoreOfferDismissed.value = true
+    }
+
     /**
      * Records that the progress changed and needs a new copy.
      * ---
@@ -131,6 +156,7 @@ class ProgressBackupRepository @Inject constructor(
                 .apply()
             _lastBackupAt.value = now
             _isPending.value = false
+            _isRestoreOfferDismissed.value = true
             DriveOutcome.Success(now)
         }
 
@@ -162,6 +188,7 @@ class ProgressBackupRepository @Inject constructor(
             .putBoolean(KEY_PENDING, false)
             .apply()
         _isPending.value = false
+        _isRestoreOfferDismissed.value = true
     }
 
     private suspend fun findCopy(bearer: String): DriveFile? =
@@ -198,5 +225,6 @@ class ProgressBackupRepository @Inject constructor(
         // ---
         // This phone already wrote or restored the Drive copy.
         const val KEY_LINKED = "linked"
+        const val KEY_OFFER_DISMISSED = "restore_offer_dismissed"
     }
 }

@@ -85,11 +85,11 @@ fun PendingBackupNotice(viewModel: BackupViewModel) {
 }
 
 /**
- * Settings: last copy, "Copy now" and, if Drive holds a copy from
- * another phone, the option to replace it.
+ * Settings: last copy, "Copy now", "Restore from Drive" and, if Drive
+ * holds a copy from another phone, the option to replace it.
  * ---
- * Ajustes: última copia, «Copiar ahora» y, si Drive tiene una copia de
- * otro móvil, la opción de sustituirla.
+ * Ajustes: última copia, «Copiar ahora», «Restaurar desde Drive» y, si
+ * Drive tiene una copia de otro móvil, la opción de sustituirla.
  */
 @Composable
 fun DriveBackupSection(viewModel: BackupViewModel) {
@@ -113,10 +113,14 @@ fun DriveBackupSection(viewModel: BackupViewModel) {
             "clave de Gemini.",
         style = MaterialTheme.typography.bodySmall,
     )
+    RestoreDialog(viewModel)
     if (isBusy) {
         CircularProgressIndicator()
     } else {
         Button(onClick = { viewModel.copyNow() }) { Text("Copiar ahora") }
+        OutlinedButton(onClick = viewModel::findCopy) {
+            Text("Restaurar desde Drive")
+        }
         if (hasForeignCopy) {
             OutlinedButton(onClick = { confirmReplace = true }) {
                 Text("Sustituir la copia de Drive por la de este móvil")
@@ -151,4 +155,84 @@ fun DriveBackupSection(viewModel: BackupViewModel) {
         )
     }
     message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+}
+
+/**
+ * Confirmation before restoring: date of the copy and how many classes
+ * it brings, since it replaces the progress of this phone.
+ * ---
+ * Confirmación antes de restaurar: fecha de la copia y cuántas clases
+ * trae, porque sustituye el progreso de este móvil.
+ */
+@Composable
+private fun RestoreDialog(viewModel: BackupViewModel) {
+    val copy by viewModel.foundCopy.collectAsState()
+    val backup = copy?.backup ?: return
+    val classes = backup.sessions.size
+    AlertDialog(
+        onDismissRequest = viewModel::cancelRestore,
+        title = { Text("¿Restaurar la copia de Drive?") },
+        text = {
+            Text(
+                "Copia del " + DateFormat
+                    .getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT)
+                    .format(Date(backup.exportedAt)) +
+                    (backup.studentName?.let { ", de $it" } ?: "") +
+                    ", con " +
+                    (if (classes == 1) "1 clase" else "$classes clases") +
+                    ". Sustituye todo el progreso de este móvil."
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = viewModel::confirmRestore) {
+                Text("Restaurar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = viewModel::cancelRestore) {
+                Text("Cancelar")
+            }
+        },
+    )
+}
+
+/**
+ * First run: offers to bring back the progress from another phone
+ * while this one has no classes yet.
+ * ---
+ * Primer arranque: ofrece recuperar el progreso de otro móvil
+ * mientras este no tenga ninguna clase.
+ */
+@Composable
+fun RestoreOffer(viewModel: BackupViewModel) {
+    val show by viewModel.showRestoreOffer.collectAsState()
+    val isBusy by viewModel.isBusy.collectAsState()
+    val message by viewModel.message.collectAsState()
+    RestoreDialog(viewModel)
+    if (!show) return
+    Card {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                "¿Ya usabas miA2F en otro móvil? Puedes recuperar tu " +
+                    "progreso desde tu Drive.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            message?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall)
+            }
+            if (isBusy) {
+                CircularProgressIndicator()
+            } else {
+                Button(onClick = viewModel::findCopy) {
+                    Text("Recuperar mi progreso")
+                }
+                OutlinedButton(onClick = viewModel::dismissRestoreOffer) {
+                    Text("No, empiezo de cero")
+                }
+            }
+        }
+    }
 }

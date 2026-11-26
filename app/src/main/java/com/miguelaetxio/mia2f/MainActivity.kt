@@ -31,6 +31,7 @@ import com.miguelaetxio.mia2f.ui.course.CourseViewModel
 import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.ui.backup.BackupViewModel
 import com.miguelaetxio.mia2f.ui.backup.PendingBackupNotice
+import com.miguelaetxio.mia2f.ui.backup.RestoreOffer
 import com.miguelaetxio.mia2f.ui.history.HistoryScreen
 import com.miguelaetxio.mia2f.ui.home.HomeViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
@@ -215,6 +216,7 @@ private fun HomeScreen(
                 }
             }
         }
+        RestoreOffer(backupViewModel)
         PendingBackupNotice(backupViewModel)
         if (isReviewDue && course != null) {
             // Destacado, pero sin bloquear «Empezar clase».
