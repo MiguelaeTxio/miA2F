@@ -66,6 +66,16 @@ fun SettingsScreen(
         TextButton(onClick = onBack) { Text("← Volver") }
         Text("Ajustes", style = MaterialTheme.typography.headlineMedium)
 
+        // Actualizaciones arriba del todo: petición de Miguel Ángel, igual
+        // que en MiMoo, para no tener que hacer scroll cada vez.
+        // ---
+        // Updates at the very top: Miguel Ángel's request, as in MiMoo,
+        // so no scrolling is needed every time.
+        Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
+        UpdateCheckSection()
+
+        HorizontalDivider()
+
         Text("Clave de la API de Gemini", style = MaterialTheme.typography.titleMedium)
         Text(
             text = keySuffix?.let { "Clave guardada (termina en …$it)." }
@@ -153,10 +163,6 @@ fun SettingsScreen(
             }
         }
 
-        HorizontalDivider()
-
-        Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
-        UpdateCheckSection()
     }
 }
 
