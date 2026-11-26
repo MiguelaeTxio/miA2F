@@ -1,0 +1,45 @@
+package com.miguelaetxio.mia2f.data.gemini
+
+/**
+ * Written exercise proposed by Gemini for one concept of the unit.
+ * ---
+ * Ejercicio escrito propuesto por Gemini para un concepto de la
+ * unidad.
+ */
+data class GeneratedExercise(
+    val conceptId: String,
+    val prompt: String,
+)
+
+/**
+ * Gemini's correction of one answer. Every error points to a concept
+ * of the unit.
+ * ---
+ * Corrección de Gemini de una respuesta. Cada error apunta a un
+ * concepto de la unidad.
+ */
+data class AnswerCorrection(
+    val isCorrect: Boolean,
+    val correctedAnswer: String,
+    val explanation: String,
+    val errors: List<CorrectionError>,
+)
+
+data class CorrectionError(
+    val conceptId: String,
+    val description: String,
+)
+
+/**
+ * Result of a teacher call. Offline is kept apart so the screen can
+ * show a plain message instead of the exception text.
+ * ---
+ * Resultado de una llamada de la profesora. Sin conexión va aparte
+ * para que la pantalla muestre un mensaje legible en vez del texto de
+ * la excepción.
+ */
+sealed class TeacherResult<out T> {
+    data class Success<T>(val value: T) : TeacherResult<T>()
+    data class Error(val message: String) : TeacherResult<Nothing>()
+    object Offline : TeacherResult<Nothing>()
+}

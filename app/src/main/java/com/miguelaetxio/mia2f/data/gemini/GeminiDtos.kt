@@ -12,6 +12,29 @@ package com.miguelaetxio.mia2f.data.gemini
 data class GenerateContentRequest(
     val systemInstruction: Content? = null,
     val contents: List<Content>,
+    val generationConfig: GenerationConfig? = null,
+)
+
+/**
+ * Only the structured output part is used: responseFormat.text with
+ * mimeType "APPLICATION_JSON" and a JSON Schema (REST form of the
+ * official guide, checked 2026-11-26, see ANNEX_H03).
+ * ---
+ * Solo se usa la parte de salida estructurada: responseFormat.text
+ * con mimeType "APPLICATION_JSON" y un JSON Schema (forma REST de la
+ * guía oficial, comprobada el 2026-11-26, ver ANNEX_H03).
+ */
+data class GenerationConfig(
+    val responseFormat: ResponseFormat? = null,
+)
+
+data class ResponseFormat(
+    val text: TextResponseFormat? = null,
+)
+
+data class TextResponseFormat(
+    val mimeType: String,
+    val schema: Map<String, Any>? = null,
 )
 
 data class Content(
