@@ -57,6 +57,47 @@ Drive (H05), pronunciación (H06) y escucha (H07).
   y a Room se verifica en la documentación oficial en el momento de
   implementarlo.
 
+### Comprobado en S2 (punto 1, 2026-11-26)
+
+- **Documentación oficial:** `ai.google.dev/gemini-api/docs/...`
+  redirige ahora a `aistudio.google.com/docs/...`. Índice:
+  `https://aistudio.google.com/llms.txt`.
+- **API:** la documentación presenta la Interactions API como la
+  predeterminada para trabajo nuevo y `generateContent` como API
+  heredada **que sigue admitida**, sin fecha de retirada
+  (`https://aistudio.google.com/docs/deprecations.md`). Se mantiene
+  `generateContent` v1beta, que es lo que ya funciona en la app: cada
+  llamada de la profesora lleva todo su contexto, así que no hace
+  falta la conversación con estado de Interactions.
+- **Salida estructurada en REST**
+  (`https://aistudio.google.com/docs/structured-output.md?generate-content=true`
+  y `https://aistudio.google.com/api-reference/generate-content/generate-content.md`):
+  `generationConfig.responseFormat.text` con `mimeType`
+  `"APPLICATION_JSON"` y `schema` (JSON Schema). Es la forma del
+  ejemplo REST oficial; se usa esa. Palabras clave admitidas:
+  `type` (`string`, `number`, `integer`, `boolean`, `object`,
+  `array`, `null`), `title`, `description`, `properties`, `required`,
+  `additionalProperties`, `enum`, `format`, `minimum`, `maximum`,
+  `items`, `prefixItems`, `minItems`, `maxItems`, `anyOf`, `$ref`.
+  `minLength`, `maxLength` y similares se ignoran: se validan en la
+  app.
+- **Varios turnos:** `contents` con entradas `role` `user`/`model` y
+  sus `parts`, en orden.
+- **Modelo:** `gemini-3.5-flash` es estable (GA desde 2026-05-19) y
+  sin fecha de retirada anunciada; se mantiene. Hay Flash más nuevos
+  (3.6, 3.7, 3.8); en 3.6 y posteriores `temperature`, `topP` y
+  `topK` se ignoran. Cambiar de modelo es tocar una constante.
+- **Método de `FrancaisA2`** (`DOCS/MAINS/FRANCAISA2_MASTER_DOCUMENT.md`
+  §4.2, §4.4 y §4.5, y `DOCS/PROGRESS/FRANCAISA2_STUDENT_PROGRESS.md`):
+  corrección en castellano, honesta y directa, constructiva y nunca
+  condescendiente; no silenciar errores reales para no desanimar; ante
+  una duda gramatical genuina no afirmar una regla sin certeza (en la
+  app: decir que hay duda en vez de inventar); un error se considera
+  recurrente solo tras aparecer en dos sesiones distintas (criterio de
+  H04, no de este hito). Los errores se anotan por patrón (auxiliar,
+  concordancia del participio, acentos, calcos del español, etc.), que
+  en la app se traduce a error asociado a un concepto del temario.
+
 ---
 
 ## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
@@ -118,3 +159,4 @@ Drive (H05), pronunciación (H06) y escucha (H07).
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | S2 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados. |
+| S2 | 2026-11-26 | Punto 1 hecho: documentación de Gemini comprobada y método de `FrancaisA2` leído (ver «Comprobado en S2»). |
