@@ -87,12 +87,20 @@ una transcripción. Además tiene nivel gratuito.
   cualquiera que lo descargue. La clave se introduce una vez en la
   pantalla de Ajustes de cada dispositivo y se guarda cifrada en el
   propio dispositivo.
-- **Restricción de la clave:** en Google Cloud Console se restringe
-  al paquete `com.miguelaetxio.mia2f` y a la huella SHA-1 de la
-  keystore de miA2F (`DOCS/SESSION_VARIABLES.md`). Las peticiones
-  REST deben enviar las cabeceras de identificación de app Android
-  que esa restricción exige (verificar en línea al implementarlo,
-  §4.5).
+- **Restricción de la clave (corregido 2026-11-26):** las claves de
+  la API de Gemini creadas en AI Studio van ligadas a una cuenta de
+  servicio, y Google Cloud **no permite** restringir esas claves por
+  app de Android (comprobado en la propia consola). La clave queda
+  restringida solo a la **Gemini API**, sin restricción de
+  aplicación. Lo compensan tres cosas: la clave no va en el APK, se
+  guarda cifrada en el Android Keystore de cada dispositivo, y el
+  proyecto `mia2f-515910` funciona en **prepago**, así que el gasto
+  máximo ante una filtración es el saldo cargado. Ante cualquier
+  sospecha: revocar la clave en AI Studio y crear otra.
+- **Paso de la clave al segundo dispositivo:** por código QR mostrado
+  en Ajustes del dispositivo que ya la tiene y escaneado por el otro
+  (petición de Miguel Ángel: su esposa no debe tener que entrar en AI
+  Studio). La clave no pasa por ningún servicio de mensajería.
 - **Nivel gratuito y privacidad:** en el nivel gratuito Google puede
   usar las peticiones (textos y grabaciones de voz) para mejorar sus
   productos; en el de pago, no. La elección de nivel es de Miguel

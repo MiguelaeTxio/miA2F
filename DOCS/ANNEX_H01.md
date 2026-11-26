@@ -26,9 +26,10 @@ completa funciona antes de construir ningún ejercicio.
      (generada el 2026-11-26), para firmar siempre con la misma clave
      y que las actualizaciones no choquen. Huellas en
      `DOCS/SESSION_VARIABLES.md`.
-3. Disponer de una clave de la API de Gemini (Google AI Studio),
-   restringida al paquete y a la huella SHA-1 de miA2F; ver
-   `MASTER_DOCUMENT.md` §2.3.
+3. Disponer de una clave de la API de Gemini (Google AI Studio,
+   proyecto `mia2f-515910`, clave `miA2F Android`), restringida a la
+   Gemini API; la restricción por app de Android no está disponible
+   para estas claves, ver `MASTER_DOCUMENT.md` §2.3.
 4. Permiso *Workflows* de la aplicación de Claude en GitHub sobre
    `miA2F`, para poder pushear `.github/workflows/`.
 5. Registrar el paquete `com.miguelaetxio.mia2f` en la Android
@@ -52,7 +53,10 @@ completa funciona antes de construir ningún ejercicio.
 5. Ajustes: introducir la clave de la API de Gemini y guardarla cifrada.
 6. Botón «Probar conexión» que envía una frase en francés a Gemini y
    muestra la corrección devuelta.
-7. Verificación real en los dos dispositivos.
+7. Pasar la clave al segundo dispositivo por código QR: el móvil que
+   ya la tiene la muestra en Ajustes y el otro la escanea en el primer
+   arranque, sin tener que entrar en AI Studio.
+8. Verificación real en los dos dispositivos.
 
 ---
 
@@ -60,4 +64,4 @@ completa funciona antes de construir ningún ejercicio.
 
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
-| — | 2026-11-26 | Proyecto inicializado (documentación base). Decidido solo Gemini. Hechos: `miA2FReleases` creado, secrets `RELEASES_REPO_LAST_TOKEN` y `DEBUG_KEYSTORE_BASE64` creados. |
+| — | 2026-11-26 | Proyecto inicializado (documentación base). Decidido solo Gemini. Puntos 1-5 hechos (v6): esqueleto, workflow, actualización in-app, perfil, clave cifrada en Ajustes; clave `miA2F Android` creada y guardada en el móvil de Miguel Ángel. Hechos: `miA2FReleases` creado, secrets `RELEASES_REPO_LAST_TOKEN` y `DEBUG_KEYSTORE_BASE64` creados. |
