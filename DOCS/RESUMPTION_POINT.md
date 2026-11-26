@@ -11,14 +11,19 @@
 ## Qué hacer en la siguiente sesión — EMPEZAR POR AQUÍ
 
 1. **Empezar directamente, sin preguntar**, por el punto 1 de la hoja
-   de ruta de `DOCS/ANNEX_H05.md` (Google Cloud, guiado con Miguel
-   Ángel) y seguir en orden.
+   de ruta de `DOCS/ANNEX_H06.md` (conceptos de fonética del temario,
+   con el visto bueno de Miguel Ángel) y seguir en orden.
 2. Si en cualquier momento Miguel Ángel trae resultados de la
-   verificación de H03 (punto 8) o de H04 (punto 5), atenderlos antes
-   de seguir: todo fallo real se corrige en el momento, con evidencia.
+   verificación de H03 (punto 8), H04 (punto 5) o H05 (punto 7),
+   atenderlos antes de seguir: todo fallo real se corrige en el
+   momento, con evidencia.
 
 ## Pendientes fuera del hito activo
 
+- **H05, punto 7:** verificación de la copia y la restauración en
+  Drive en los dos móviles (lista exacta en `ANNEX_H05.md`). En el
+  móvil de su esposa, al actualizar verá «¿Ya usabas miA2F en otro
+  móvil?»: debe pulsar «No, empiezo de cero».
 - **H03, punto 8, y H04, punto 5:** verificación en el móvil de
   Miguel Ángel, que decidió hacer al final y en conjunto. Listas
   exactas en `ANNEX_H03.md` (clase completa, test con algún fallo y

@@ -179,6 +179,7 @@ Copia del progreso en el Drive de la cuenta de Google de cada
 dispositivo y restauración tras perder o cambiar de teléfono.
 
 ### Hito 06 — Pronunciación
+(Ver `DOCS/ANNEX_H06.md`)
 Frase modelo con TTS francés, grabación del alumno y comentario de
 Gemini sobre el audio real.
 
