@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace  = "com.miguelaetxio.mia2f"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.miguelaetxio.mia2f"
