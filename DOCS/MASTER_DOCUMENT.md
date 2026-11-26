@@ -17,29 +17,33 @@ como sesiones de chat con Claude. Se instala en **dos dispositivos**,
 igual que MiMoo: el de Miguel Ángel y el de su esposa. Cada
 dispositivo es un alumno distinto con su propio progreso.
 
-El curso sigue el mismo principio que `FrancaisA2`: refuerzo en
-paralelo a la Escuela Oficial de Idiomas (libro *Prêt à porter*,
-nivel A2), sin temario propio independiente. Lo que la app añade
-frente al chat:
+**Rediseño del 2026-11-26 (acordado con Miguel Ángel antes del
+PCH a H02):** la app es un **curso completo de francés A2 según el
+MCER**, no un refuerzo ligado al libro de la EOI. Tres piezas:
 
-1. Ejercicios escritos corregidos por Gemini vía API, siguiendo el
-   método de corrección de `FrancaisA2` (frase por frase, explicación
-   en castellano, sin silenciar errores).
-2. Pronunciación evaluada sobre la **grabación real** de la voz del
-   alumno: la app reproduce la frase modelo con voz francesa del
-   dispositivo, graba al alumno y envía el audio a Gemini.
-3. Escucha: diálogos cortos en francés reproducidos con la voz del
-   dispositivo, con preguntas de comprensión corregidas por Gemini.
-4. Seguimiento de errores recurrentes por alumno, guardado en el
-   propio dispositivo.
+1. **El curso como datos.** El temario (unidades, objetivos y
+   conceptos de gramática, vocabulario, comunicación y fonética, cada
+   uno con identificador estable) vive en un archivo estructurado en
+   el repositorio público de cursos `MiguelaeTxio/miCursos`, redactado
+   una vez y revisado contra los descriptores oficiales del MCER para
+   el A2 — nunca inventado por Gemini sobre la marcha. La app lo
+   descarga y lo guarda; el mismo repositorio deja la puerta abierta a
+   otros niveles e idiomas.
+2. **Gemini como profesora.** En cada sesión recibe la parte del
+   temario que toca y un resumen del progreso del alumno; pone
+   ejercicios, los corrige con el método de `FrancaisA2` (castellano,
+   honesto, sin silenciar errores), hace pruebas de evaluación
+   continua y devuelve qué conceptos se trabajaron y qué errores
+   salieron. La app registra cada sesión hasta terminar el curso.
+3. **Progreso a salvo.** El progreso de cada alumno se guarda en su
+   móvil y se copia en **el Drive de su propia cuenta de Google**,
+   como en MiMoo, para no perderlo si se pierde el teléfono.
 
-**Prioridad de construcción, de más a menos básico:**
-1. Esqueleto, compilación en la nube, actualizaciones in-app, perfil
-   de alumno, clave de API y primera llamada real a Gemini (Hito 01).
-2. Ejercicios escritos con corrección (Hito 02).
-3. Pronunciación (Hito 03).
-4. Escucha (Hito 04).
-5. Progreso y errores recurrentes por alumno (Hito 05).
+Además: pronunciación evaluada sobre la **grabación real** de la voz
+del alumno, y escucha con diálogos reproducidos por la voz francesa
+del dispositivo.
+
+**Prioridad de construcción:** ver §3 (H01 → H07).
 
 ---
 
@@ -122,8 +126,16 @@ una transcripción. Además tiene nivel gratuito.
 
 Cada instalación guarda un único perfil de alumno (nombre elegido en
 el primer arranque). El progreso de cada alumno vive en su propio
-dispositivo. Sincronizar progreso entre dispositivos o con el
-repositorio `FrancaisA2` queda fuera del alcance inicial.
+dispositivo y se copia en el Drive de la cuenta de Google de ese
+mismo dispositivo (H05). No se sincroniza entre los dos alumnos.
+
+### 2.7. Repositorio de cursos `miCursos`
+
+Repositorio **público** `MiguelaeTxio/miCursos`, solo de contenido
+(sin código de la app, sin datos personales). Un curso por carpeta
+(`fr/A2/` el primero). La app descarga el curso, lo guarda en caché y
+comprueba su versión; corregir o ampliar un temario no exige sacar
+una versión nueva de la app. El formato del archivo se fija en H02.
 
 ### 2.6. Control de Versiones — NewFlow
 
@@ -143,23 +155,33 @@ Proyecto Android compilando en la nube, Release publicada en
 alumno, clave de API guardada cifrada y una primera llamada real a
 Gemini verificada en los dos dispositivos.
 
-### Hito 02 — Ejercicios escritos con corrección
-Ejercicios del tramo activo del curso (empezando por *passé composé*
-y conectores de tiempo), corregidos por Gemini con el método de
-`FrancaisA2`.
+### Hito 02 — Repositorio de cursos y temario A2 según el MCER
+(Ver `DOCS/ANNEX_H02.md`)
+Formato del archivo de curso, temario completo de francés A2 en
+`miCursos` contrastado con las fuentes oficiales del MCER, y descarga,
+caché y consulta del temario en la app.
 
-### Hito 03 — Pronunciación
+### Hito 03 — La profesora: sesiones con ejercicios y corrección
+Sesiones guiadas por Gemini según el temario y el progreso del
+alumno: ejercicios escritos, corrección con el método de
+`FrancaisA2` y registro de cada sesión.
+
+### Hito 04 — Evaluación continua y criterio de superación
+Pruebas de evaluación continua y criterio para dar un concepto por
+superado (el error deja de aparecer en al menos dos sesiones
+distintas, como en `FrancaisA2`).
+
+### Hito 05 — Copia y restauración del progreso en Drive
+Copia del progreso en el Drive de la cuenta de Google de cada
+dispositivo y restauración tras perder o cambiar de teléfono.
+
+### Hito 06 — Pronunciación
 Frase modelo con TTS francés, grabación del alumno y comentario de
 Gemini sobre el audio real.
 
-### Hito 04 — Escucha
+### Hito 07 — Escucha
 Diálogos cortos reproducidos con TTS y preguntas de comprensión
 corregidas por Gemini.
-
-### Hito 05 — Progreso y errores recurrentes
-Registro por alumno de errores, vocabulario y nivel por destreza, con
-el mismo criterio de «recurrente» que `FrancaisA2` (dos sesiones
-distintas).
 
 ---
 

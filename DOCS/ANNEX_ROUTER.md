@@ -22,7 +22,8 @@ por primera vez.
 
 | Hito | Anexo | Estado |
 |---|---|---|
-| H01 | `DOCS/ANNEX_H01.md` | ← **EN PROGRESO** |
+| H01 | `DOCS/ANNEX_H01.md` | PAUSADO |
+| H02 | `DOCS/ANNEX_H02.md` | ← **EN PROGRESO** |
 
 ---
 
@@ -30,3 +31,9 @@ por primera vez.
 
 - **2026-11-26** — Inicialización del proyecto. H01 abierto EN
   PROGRESO.
+- **2026-11-26** — PCH explícito de Miguel Ángel («PCH a H02»): **H01
+  pasa a PAUSADO** con el punto 8 de su hoja de ruta pendiente
+  (verificación en el móvil de su esposa, que se hará cuando ella
+  esté disponible). **H02 (Repositorio de cursos y temario A2 según
+  el MCER) abierto EN PROGRESO**, tras rediseñar la app como curso
+  completo con Gemini de profesora y progreso copiado en Drive.

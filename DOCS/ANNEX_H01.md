@@ -65,3 +65,4 @@ completa funciona antes de construir ningún ejercicio.
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | — | 2026-11-26 | Proyecto inicializado (documentación base). Decidido solo Gemini. Puntos 1-5 hechos (v6): esqueleto, workflow, actualización in-app, perfil, clave cifrada en Ajustes; clave `miA2F Android` creada y guardada en el móvil de Miguel Ángel. Hechos: `miA2FReleases` creado, secrets `RELEASES_REPO_LAST_TOKEN` y `DEBUG_KEYSTORE_BASE64` creados. |
+| — | 2026-11-26 (tarde) | Puntos 6 y 7 hechos: prueba de conexión real con Gemini (`gemini-3.5-flash`) con Markdown renderizado (v11, `multiplatform-markdown-renderer` 0.40.0 tras descartar la 0.46.0 por exigir compileSdk 37 y Kotlin 2.4), paso de la clave por QR (v12) y actualizaciones arriba del todo en Ajustes (v13). Verificado en el móvil de Miguel Ángel: actualización in-app, clave, corrección y QR. **Pendiente: punto 8 en el móvil de su esposa** (instalar, escanear el QR, probar conexión). |

@@ -16,7 +16,8 @@ GitHub o vía `newflow-android-edit`. No es una skill.*
 | `ANNEX_PATH_PATTERN` | `DOCS/ANNEX_H{NN}.md` |
 | `RESUMPTION_POINT_PATH` | `DOCS/RESUMPTION_POINT.md` |
 | `RELEASES_REPO` (público, Releases + `manifest.json`) | `MiguelaeTxio/miA2FReleases` |
-| `COURSE_SOURCE_REPO` (curso de chat del que sale el contenido) | `MiguelaeTxio/FrancaisA2` |
+| `COURSES_REPO` (público, temarios de los cursos; ver `MASTER_DOCUMENT.md` §2.7) | `MiguelaeTxio/miCursos` |
+| `CHAT_COURSE_REPO` (curso por chat con Claude, origen del método de corrección) | `MiguelaeTxio/FrancaisA2` |
 | `GCP_PROJECT` (Gemini API de miA2F; cuenta de facturación `cuenta_pago_el_campus`, nivel de pago) | `miA2F` — ID `mia2f-515910` |
 | `GEMINI_KEY_NAME` (nombre de la clave en AI Studio; el valor nunca vive aquí) | `miA2F Android` |
 
