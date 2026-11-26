@@ -1,5 +1,7 @@
 package com.miguelaetxio.mia2f.di
 
+import com.miguelaetxio.mia2f.data.backup.DriveApiService
+import com.miguelaetxio.mia2f.data.backup.DriveUploadApiService
 import com.miguelaetxio.mia2f.data.course.CourseApiService
 import com.miguelaetxio.mia2f.data.gemini.GeminiApiService
 import com.miguelaetxio.mia2f.data.remote.AppUpdateApiService
@@ -35,6 +37,12 @@ object NetworkModule {
     // 2026-11-26 en ai.google.dev/api/generate-content.
     private const val GEMINI_BASE_URL =
         "https://generativelanguage.googleapis.com/"
+
+    // Drive REST v3 (H05): metadatos y subida van en rutas distintas,
+    // comprobado en línea el 2026-11-26 (files.update, manage-uploads).
+    private const val DRIVE_BASE_URL = "https://www.googleapis.com/drive/v3/"
+    private const val DRIVE_UPLOAD_BASE_URL =
+        "https://www.googleapis.com/upload/drive/v3/"
 
     @Provides
     @Singleton
@@ -79,4 +87,28 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(CourseApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideDriveApiService(
+        okHttpClient: OkHttpClient,
+    ): DriveApiService =
+        Retrofit.Builder()
+            .baseUrl(DRIVE_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(DriveApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideDriveUploadApiService(
+        okHttpClient: OkHttpClient,
+    ): DriveUploadApiService =
+        Retrofit.Builder()
+            .baseUrl(DRIVE_UPLOAD_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(DriveUploadApiService::class.java)
 }

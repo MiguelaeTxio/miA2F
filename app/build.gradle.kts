@@ -89,6 +89,10 @@ dependencies {
     implementation(libs.play.services.code.scanner)
     implementation(libs.zxing.core)
 
+    // Autorización de Drive con Identity.getAuthorizationClient (H05);
+    // versión de developer.android.com/identity/authorization.
+    implementation(libs.play.services.auth)
+
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 }
