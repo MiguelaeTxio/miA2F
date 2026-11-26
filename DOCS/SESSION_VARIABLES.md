@@ -21,7 +21,14 @@ GitHub o vía `newflow-android-edit`. No es una skill.*
 ## Secrets de GitHub Actions (no vive el valor aquí, solo el nombre)
 
 - `RELEASES_REPO_LAST_TOKEN` — escritura sobre `miA2FReleases`.
-- `DEBUG_KEYSTORE_BASE64` — la misma keystore de debug que MiMoo.
+- `DEBUG_KEYSTORE_BASE64` — keystore de debug propia de miA2F
+  (generada el 2026-11-26; alias `androiddebugkey`, contraseñas por
+  defecto de debug de Android). No es la de MiMoo: al ser otro
+  paquete, no necesita compartir firma. Huellas públicas, para
+  verificar la keystore restaurada en el workflow y para restringir
+  claves de API de Google al paquete:
+  - SHA-1: `2E:D2:47:BF:4F:19:50:E4:97:03:77:FC:A8:8C:FE:E1:C2:F0:B2:A7`
+  - SHA-256: `8A:14:BE:97:22:F4:17:61:39:EC:08:ED:FA:30:81:DF:84:10:28:2A:2E:9E:1C:6A:52:8D:EB:24:9A:78:6F:1E`
 
 ## Clave de la Claude API
 

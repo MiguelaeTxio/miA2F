@@ -22,9 +22,10 @@ completa funciona antes de construir ningún ejercicio.
 2. Añadir en `miA2F` → Settings → Secrets and variables → Actions:
    - `RELEASES_REPO_LAST_TOKEN`: token con permiso de escritura de
      contenido sobre `miA2FReleases`.
-   - `DEBUG_KEYSTORE_BASE64`: la misma keystore de debug que usa
-     MiMoo, para firmar siempre con la misma clave y que las
-     actualizaciones no choquen.
+   - `DEBUG_KEYSTORE_BASE64`: keystore de debug propia de miA2F
+     (generada el 2026-11-26), para firmar siempre con la misma clave
+     y que las actualizaciones no choquen. Huellas en
+     `DOCS/SESSION_VARIABLES.md`.
 3. Disponer de una clave de la Claude API (Claude Console). La API se
    factura aparte de la suscripción de claude.ai; ver
    `MASTER_DOCUMENT.md` §2.3.
