@@ -81,6 +81,35 @@ nunca, `MASTER_DOCUMENT.md` §2.5), pronunciación (H06) y escucha
   escribe en una transacción y conserva los `id`: el criterio de
   superación de H04 ordena las clases por `id`.
 
+### Comprobado en S3 (documentación oficial, 2026-11-26)
+
+- **Autorización** (`developer.android.com/identity/authorization`):
+  `Identity.getAuthorizationClient(…).authorize(AuthorizationRequest
+  .builder().setRequestedScopes(…).build())`; si `hasResolution()`, se
+  lanza `pendingIntent.intentSender` con `StartIntentSenderForResult` y
+  el resultado se lee con `getAuthorizationResultFromIntent`; el token
+  sale de `accessToken`. El token dura unos 60 minutos y está en caché;
+  volver a llamar a `authorize()` devuelve uno nuevo sin interacción
+  mientras el permiso siga concedido. Si un token falla, se quita con
+  `clearToken(ClearTokenRequest…)` y se vuelve a pedir. La página usa
+  `play-services-auth:22.0.0`; las notas de versión de Google Play
+  services dicen que la 22.0.0 retira las API de Google Sign-in, pero
+  no la de autorización.
+- **Drive v3:** crear con `POST
+  https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`
+  (`multipart/related`: metadatos JSON + contenido); sobrescribir con
+  `PATCH https://www.googleapis.com/upload/drive/v3/files/{fileId}
+  ?uploadType=media`; buscar con `q = name = '…' and trashed = false`;
+  descargar con `alt=media`. `files.update` admite el scope
+  `drive.file`.
+- **Modo Testing (Google Cloud, «Manage App Audience»):** las
+  autorizaciones de un test user **caducan a los siete días** del
+  consentimiento. En la práctica: una vez por semana, la copia
+  automática encontrará que hace falta volver a aceptar el permiso.
+  Pendiente de decisión de Miguel Ángel: dejarlo así (aviso legible en
+  el inicio para aceptar de nuevo) o pasar la app a «In production»
+  (con `drive.file`, que es un scope no sensible).
+
 ---
 
 ## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
