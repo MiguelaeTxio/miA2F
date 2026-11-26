@@ -1,6 +1,6 @@
 # PUNTO DE REANUDACIÓN — miA2F
 
-**Última sesión cerrada:** S1 (2026-11-26).
+**Última sesión:** S2 (2026-11-26), PCH a H03.
 **Hito con la hoja de ruta activa:** ver `DOCS/ANNEX_ROUTER.md`
 
 > El estado de los hitos vive **exclusivamente** en
@@ -11,13 +11,8 @@
 ## Qué hacer en la siguiente sesión — EMPEZAR POR AQUÍ
 
 1. **Empezar directamente, sin preguntar**, por el punto 1 de la hoja
-   de ruta de `DOCS/ANNEX_H02.md`: el mensaje de «sin conexión»
-   legible en el inicio. Hacerlo, publicarlo y pedir a Miguel Ángel
-   que lo verifique en el móvil en modo avión.
-2. Con eso H02 queda sin trabajo pendiente. El hito siguiente es H03
-   (la profesora: sesiones con ejercicios escritos y corrección según
-   el temario y el progreso); el cambio de hito lo hace Miguel Ángel
-   diciendo «PCH a H03».
+   de ruta de `DOCS/ANNEX_H03.md` (verificación de la API de Gemini y
+   lectura del método de `FrancaisA2`), y seguir en orden.
 
 ## Pendientes fuera del hito activo
 
@@ -46,3 +41,6 @@
 - Temario: repositorio público `MiguelaeTxio/miCursos`, validar con
   `python3 tools/validate_course.py` antes de cada commit y subir
   `version` en `index.json` y en el `course.json` al cambiarlo.
+- Aviso de temario: `CourseRepository.refresh()` devuelve
+  `RefreshResult.Offline` ante `IOException`; `CourseViewModel` lo
+  convierte en `RefreshNotice` (rojo solo si `isError`).

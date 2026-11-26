@@ -67,6 +67,21 @@ verificados (detalle y commits en el registro de sesiones):
 
 ---
 
+## COMPLETADAS EN S2 (2026-11-26)
+
+1. Mensaje de «sin conexión» legible (punto 1 de la hoja de ruta de
+   abajo, que se conserva intacta por ser la vigente al pausar el
+   hito). Un fallo de red al comprobar el temario devuelve
+   `RefreshResult.Offline` y el inicio muestra el aviso en el color
+   normal del texto; los demás fallos siguen en rojo (`842b786`).
+   Verificado por Miguel Ángel en su móvil: con conexión no hay
+   aviso; en modo avión sale «Sin conexión: usando el temario guardado
+   (versión 1).».
+
+Con esto H02 no tiene trabajo pendiente.
+
+---
+
 ## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
 
 1. **Mensaje de «sin conexión» legible** (petición de Miguel Ángel al
@@ -94,3 +109,4 @@ verificados (detalle y commits en el registro de sesiones):
 | — | 2026-11-26 (tarde) | Puntos 1-3 hechos en `miCursos`: fuentes del MCER en el README (`c1fe43f`), formato v1 y `tools/validate_course.py` (`eb0fae9`), temario de francés A2 v1 con 12 unidades y 57 conceptos, validado con 0 errores (`38cd920`). Comprobado que `raw.githubusercontent.com/MiguelaeTxio/miCursos/main/index.json` responde 200 sin autenticación. |
 | — | 2026-11-26 (tarde) | Puntos 4-6 hechos: descarga y caché del temario desde `miCursos` (v16, `c8a9950`) y pantalla Temario (v17, `00e1b01`). Verificado por Miguel Ángel en su móvil: el inicio muestra «Francés A2 (MCER) — versión 1 del temario, 12 unidades», la unidad 3 se ve completa, y en modo avión el temario sigue disponible desde la copia guardada (con el aviso de que no se pudo comprobar), y al volver la conexión el aviso desaparece. Hoja de ruta de H02 completa. |
 | S1 | 2026-11-26 | Cierre de sesión: registro de lo completado y hoja de ruta nueva (mensaje de «sin conexión» legible). |
+| S2 | 2026-11-26 | Aviso de «sin conexión» legible en el inicio (`842b786`), verificado por Miguel Ángel en su móvil con y sin modo avión. PCH a H03. |

@@ -23,7 +23,8 @@ por primera vez.
 | Hito | Anexo | Estado |
 |---|---|---|
 | H01 | `DOCS/ANNEX_H01.md` | PAUSADO |
-| H02 | `DOCS/ANNEX_H02.md` | ← **EN PROGRESO** |
+| H02 | `DOCS/ANNEX_H02.md` | PAUSADO |
+| H03 | `DOCS/ANNEX_H03.md` | ← **EN PROGRESO** |
 
 ---
 
@@ -37,3 +38,8 @@ por primera vez.
   esté disponible). **H02 (Repositorio de cursos y temario A2 según
   el MCER) abierto EN PROGRESO**, tras rediseñar la app como curso
   completo con Gemini de profesora y progreso copiado en Drive.
+- **2026-11-26** — PCH explícito de Miguel Ángel («PCH a H03»), tras
+  verificar en su móvil el aviso de «sin conexión» (único punto que
+  quedaba en H02). **H02 pasa a PAUSADO** sin trabajo pendiente.
+  **H03 (La profesora: sesiones con ejercicios y corrección) abierto
+  EN PROGRESO.**

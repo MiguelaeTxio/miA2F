@@ -162,6 +162,7 @@ Formato del archivo de curso, temario completo de francés A2 en
 caché y consulta del temario en la app.
 
 ### Hito 03 — La profesora: sesiones con ejercicios y corrección
+(Ver `DOCS/ANNEX_H03.md`)
 Sesiones guiadas por Gemini según el temario y el progreso del
 alumno: ejercicios escritos, corrección con el método de
 `FrancaisA2` y registro de cada sesión.
