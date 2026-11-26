@@ -31,6 +31,12 @@ completa funciona antes de construir ningún ejercicio.
    `MASTER_DOCUMENT.md` §2.3.
 4. Permiso *Workflows* de la aplicación de Claude en GitHub sobre
    `miA2F`, para poder pushear `.github/workflows/`.
+5. Registrar el paquete `com.miguelaetxio.mia2f` en la Android
+   Developer Console (verificación de desarrollador de Android),
+   aportando un APK firmado con la keystore de miA2F (cualquier
+   Release de `miA2FReleases` sirve). Hoy no bloquea la instalación en
+   España (la aplicación global está anunciada para 2027), pero se
+   deja hecho igual que con MiMoo.
 
 ---
 
