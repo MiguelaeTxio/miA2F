@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.ui.profile.ProfileSetupScreen
 import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
+import com.miguelaetxio.mia2f.ui.course.CourseScreen
 import com.miguelaetxio.mia2f.ui.course.CourseViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
@@ -58,14 +59,17 @@ private fun AppRoot(
 ) {
     val studentName by profileViewModel.studentName.collectAsState()
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showCourse by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
         name == null ->
             ProfileSetupScreen(onSave = profileViewModel::saveStudentName)
         showSettings -> SettingsScreen(onBack = { showSettings = false })
+        showCourse -> CourseScreen(onBack = { showCourse = false })
         else -> HomeScreen(
             studentName = name,
             onOpenSettings = { showSettings = true },
+            onOpenCourse = { showCourse = true },
         )
     }
 }
@@ -74,6 +78,7 @@ private fun AppRoot(
 private fun HomeScreen(
     studentName: String,
     onOpenSettings: () -> Unit,
+    onOpenCourse: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
 ) {
@@ -139,6 +144,9 @@ private fun HomeScreen(
                     }
                 }
             }
+        }
+        Button(onClick = onOpenCourse, enabled = course != null) {
+            Text("Temario")
         }
         Button(onClick = onOpenSettings) {
             Text("Ajustes")
