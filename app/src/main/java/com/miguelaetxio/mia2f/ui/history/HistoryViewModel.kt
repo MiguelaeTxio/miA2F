@@ -8,6 +8,7 @@ import com.miguelaetxio.mia2f.data.study.ConceptErrorDao
 import com.miguelaetxio.mia2f.data.study.Exercise
 import com.miguelaetxio.mia2f.data.study.ExerciseDao
 import com.miguelaetxio.mia2f.data.study.SessionSummary
+import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.data.study.StudySessionDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -42,9 +43,23 @@ class HistoryViewModel @Inject constructor(
      * «Unidad N: título» de un identificador de unidad, o el
      * identificador si el curso no lo tiene.
      */
-    fun unitTitle(unitId: String): String =
+    private fun unitTitle(unitId: String): String =
         course.value?.units?.firstOrNull { it.id == unitId }
             ?.let { "Unidad ${it.number}: ${it.title}" } ?: unitId
+
+    /**
+     * Heading of a class: "Repaso" for a review, "Test · " plus the
+     * unit for a unit test, and the unit for a lesson.
+     * ---
+     * Título de una clase: «Repaso» para una prueba de repaso,
+     * «Test · » y la unidad para un test de unidad, y la unidad para
+     * una clase.
+     */
+    fun sessionTitle(kind: String, unitId: String): String = when (kind) {
+        StudySession.KIND_REVIEW -> "Repaso"
+        StudySession.KIND_TEST -> "Test · " + unitTitle(unitId)
+        else -> unitTitle(unitId)
+    }
 
     /**
      * Concept title for an ID, or the ID if the course lacks it.

@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.data.study.SessionSummary
-import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
 import java.text.DateFormat
 import java.util.Date
@@ -95,8 +94,7 @@ private fun SessionCard(
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(
-                (if (session.kind == StudySession.KIND_TEST) "Test · "
-                else "") + viewModel.unitTitle(session.unitId),
+                viewModel.sessionTitle(session.kind, session.unitId),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -127,8 +125,7 @@ private fun SessionDetail(
             TextButton(onClick = onBack) { Text("← Historial") }
             session?.let {
                 Text(
-                    (if (it.kind == StudySession.KIND_TEST) "Test · "
-                    else "") + viewModel.unitTitle(it.unitId),
+                    viewModel.sessionTitle(it.kind, it.unitId),
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(

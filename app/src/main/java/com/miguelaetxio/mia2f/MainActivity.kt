@@ -33,6 +33,7 @@ import com.miguelaetxio.mia2f.ui.history.HistoryScreen
 import com.miguelaetxio.mia2f.ui.home.HomeViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.lesson.LessonScreen
+import com.miguelaetxio.mia2f.ui.progress.ProgressScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -77,6 +78,11 @@ private fun AppRoot(
         mutableStateOf(StudySession.KIND_LESSON)
     }
     var showHistory by rememberSaveable { mutableStateOf(false) }
+    // Clave nueva en cada apertura para recalcular el progreso.
+    // ---
+    // New key on every opening so the progress is recomputed.
+    var progressRun by rememberSaveable { mutableStateOf(0) }
+    var showProgress by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
         name == null ->
@@ -89,11 +95,19 @@ private fun AppRoot(
             viewModel = hiltViewModel(key = "lesson-$lessonRun"),
         )
         showHistory -> HistoryScreen(onBack = { showHistory = false })
+        showProgress -> ProgressScreen(
+            onBack = { showProgress = false },
+            viewModel = hiltViewModel(key = "progress-$progressRun"),
+        )
         else -> HomeScreen(
             studentName = name,
             onOpenSettings = { showSettings = true },
             onOpenCourse = { showCourse = true },
             onOpenHistory = { showHistory = true },
+            onOpenProgress = {
+                progressRun += 1
+                showProgress = true
+            },
             onStartLesson = {
                 lessonRun += 1
                 lessonKind = StudySession.KIND_LESSON
@@ -122,6 +136,7 @@ private fun HomeScreen(
     onStartTest: () -> Unit,
     onStartReview: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenProgress: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
@@ -233,6 +248,9 @@ private fun HomeScreen(
         }
         Button(onClick = onStartTest, enabled = course != null) {
             Text("Hacer test para saltar unidad")
+        }
+        Button(onClick = onOpenProgress, enabled = course != null) {
+            Text("Mi progreso")
         }
         Button(onClick = onOpenHistory) {
             Text("Historial de clases")
