@@ -20,6 +20,8 @@ GitHub o vía `newflow-android-edit`. No es una skill.*
 | `CHAT_COURSE_REPO` (curso por chat con Claude, origen del método de corrección) | `MiguelaeTxio/FrancaisA2` |
 | `GCP_PROJECT` (Gemini API de miA2F; cuenta de facturación `cuenta_pago_el_campus`, nivel de pago) | `miA2F` — ID `mia2f-515910` |
 | `GEMINI_KEY_NAME` (nombre de la clave en AI Studio; el valor nunca vive aquí) | `miA2F Android` |
+| `DRIVE_OAUTH_CLIENTS` (Google Auth Platform de `mia2f-515910`, H05; los Client ID no se usan en el código) | `miA2F Android` (tipo Android, paquete + SHA-1 de abajo) y `miA2F Web` (tipo Web application, sin URIs) |
+| `DRIVE_OAUTH_AUDIENCE` | External, en Testing; 2 test users (la cuenta de Google de Miguel Ángel y la de su esposa); scope `drive.file` en Data Access |
 
 ## Secrets de GitHub Actions (no vive el valor aquí, solo el nombre)
 

@@ -132,3 +132,4 @@ nunca, `MASTER_DOCUMENT.md` §2.5), pronunciación (H06) y escucha
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | S3 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados a partir del patrón de Drive ya verificado en MiMoo H06. |
+| S3 | 2026-11-26 | Punto 1 hecho con Miguel Ángel en la consola: Google Auth Platform creado en `mia2f-515910` (External, Testing), 2 test users, scope `drive.file`, clientes OAuth `miA2F Android` y `miA2F Web`. Anotado en `SESSION_VARIABLES.md`. La habilitación de la Drive API (Biblioteca) no se confirmó con captura: si la primera llamada a Drive devuelve 403 «API not enabled», es eso. |
