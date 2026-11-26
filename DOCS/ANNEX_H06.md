@@ -62,8 +62,8 @@ concepto y cuentan en «Mi progreso» como cualquier otro error.
 - **Voz del móvil:** `android.speech.tts.TextToSpeech` con `fr-FR`
   (`MASTER_DOCUMENT.md` §2.4). La voz francesa depende de cada móvil:
   hay que detectar si falta y llevar al alumno a instalarla.
-- **Temario (`miCursos`, `fr/A2/course.json`):** 57 conceptos, de los
-  que solo **2 son de fonética** («ils ont / ils sont» y «Vocales
+- **Temario (`miCursos`, `fr/A2/course.json`):** 57 conceptos (v1), de los
+  que solo **2 eran de fonética** («ils ont / ils sont» y «Vocales
   nasales»). Los errores de pronunciación se registran por concepto
   (`concept_error.concept_id`), así que con 2 conceptos casi ningún
   fallo tendría dónde anotarse.
@@ -118,3 +118,4 @@ concepto y cuentan en «Mi progreso» como cualquier otro error.
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | S3 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados; comprobados los formatos de audio de Gemini y los conceptos de fonética del temario (2 de 57). |
+| S3 | 2026-11-26 | Punto 1 hecho (`miCursos` `d04979a`, temario v2): el MCER solo describe inteligibilidad y prosodia en A2; la «Matière sonore» del referencial A2 no está en línea, así que se añade como fuente el *Précis de phonétique* de Inspire 2 (A2, Hachette 2020). Miguel Ángel delega la elección pedagógica. 9 conceptos nuevos: ritmo y acento final y entonación de la pregunta (U1), [y]/[u] (U2), [e]/[ɛ] (U4), liaison (U5), [s]/[z] y [ʃ]/[ʒ] (U7), encadenamiento (U8), [ø]/[œ] y [o]/[ɔ] (U9), r francesa (U10). Total: 11 de 66 conceptos son de fonética. |
