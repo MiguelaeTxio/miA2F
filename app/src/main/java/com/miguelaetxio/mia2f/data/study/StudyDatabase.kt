@@ -14,7 +14,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 @Database(
     entities = [StudySession::class, Exercise::class, ConceptError::class],
-    version = 2,
+    version = StudyDatabase.VERSION,
     exportSchema = false,
 )
 abstract class StudyDatabase : RoomDatabase() {
@@ -23,6 +23,13 @@ abstract class StudyDatabase : RoomDatabase() {
     abstract fun conceptErrorDao(): ConceptErrorDao
 
     companion object {
+
+        /**
+         * Schema version; also written in every Drive backup.
+         * ---
+         * Versión del esquema; también va en cada copia de Drive.
+         */
+        const val VERSION = 2
 
         /**
          * v2 adds the class kind (lesson or unit test); existing rows

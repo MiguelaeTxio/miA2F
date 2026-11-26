@@ -17,6 +17,15 @@ interface StudySessionDao {
     @Insert
     suspend fun insert(session: StudySession): Long
 
+    @Insert
+    suspend fun insertAll(sessions: List<StudySession>)
+
+    @Query("SELECT * FROM study_session ORDER BY id")
+    suspend fun all(): List<StudySession>
+
+    @Query("DELETE FROM study_session")
+    suspend fun deleteAll()
+
     @Query("UPDATE study_session SET ended_at = :endedAt WHERE id = :id")
     suspend fun finish(id: Long, endedAt: Long)
 
@@ -75,6 +84,12 @@ interface ExerciseDao {
     @Update
     suspend fun update(exercise: Exercise)
 
+    @Query("SELECT * FROM exercise ORDER BY id")
+    suspend fun all(): List<Exercise>
+
+    @Query("DELETE FROM exercise")
+    suspend fun deleteAll()
+
     @Query(
         "SELECT * FROM exercise WHERE session_id = :sessionId " +
             "ORDER BY position"
@@ -122,4 +137,7 @@ interface ConceptErrorDao {
 
     @Query("SELECT * FROM concept_error ORDER BY id")
     suspend fun all(): List<ConceptError>
+
+    @Query("DELETE FROM concept_error")
+    suspend fun deleteAll()
 }
