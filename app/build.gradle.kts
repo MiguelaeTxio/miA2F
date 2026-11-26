@@ -88,4 +88,7 @@ dependencies {
 
     implementation(libs.play.services.code.scanner)
     implementation(libs.zxing.core)
+
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
 }
