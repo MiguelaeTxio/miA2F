@@ -1,0 +1,108 @@
+name: Build and Release APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Verificar RELEASES_REPO_LAST_TOKEN antes de compilar
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/token_check.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.RELEASES_REPO_LAST_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/MiguelaeTxio/miA2FReleases")
+          echo "HTTP status contra miA2FReleases: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ RELEASES_REPO_LAST_TOKEN no es válido o no tiene acceso a miA2FReleases (código $HTTP_CODE)."
+            cat /tmp/token_check.json
+            exit 1
+          fi
+          echo "✅ RELEASES_REPO_LAST_TOKEN válido y con acceso a miA2FReleases."
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cachear Gradle (dependencias + wrapper + build cache)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Restaurar keystore de debug fija
+        run: |
+          mkdir -p ~/.android
+          echo "${{ secrets.DEBUG_KEYSTORE_BASE64 }}" | base64 -d > ~/.android/debug.keystore
+
+      - name: Verificar huella SHA-256 de la keystore restaurada
+        run: |
+          EXPECTED="8A:14:BE:97:22:F4:17:61:39:EC:08:ED:FA:30:81:DF:84:10:28:2A:2E:9E:1C:6A:52:8D:EB:24:9A:78:6F:1E"
+          REAL=$(keytool -list -v -keystore ~/.android/debug.keystore \
+            -storepass android -alias androiddebugkey \
+            | grep "SHA256:" | awk '{print $2}')
+          echo "Huella SHA-256 esperada: $EXPECTED"
+          echo "Huella SHA-256 real:     $REAL"
+          if [ "$REAL" != "$EXPECTED" ]; then
+            echo "❌ La keystore restaurada no es la de miA2F."
+            exit 1
+          fi
+          echo "✅ Keystore correcta."
+
+      - name: Dar permisos a gradlew
+        run: chmod +x gradlew
+
+      - name: Compilar APK debug
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug -PversionCode=${{ github.run_number }} 2>&1 | tee /tmp/gradle.log
+
+      # Errores de compilación como anotaciones del check, legibles por
+      # la API de GitHub sin descargar el zip de logs (patrón MiMoo S025).
+      - name: Publicar errores de compilación como anotaciones
+        if: failure()
+        run: |
+          if [ ! -f /tmp/gradle.log ]; then
+            echo "::error::No hay /tmp/gradle.log"
+            exit 0
+          fi
+          grep -E "^e: |error: |FAILURE: |What went wrong|Caused by:" /tmp/gradle.log \
+            | head -40 \
+            | while IFS= read -r line; do
+                clean=$(printf '%s' "$line" | tr -d '\r' | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::${clean}"
+              done
+
+      - name: Generar manifest.json de versión
+        run: |
+          VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts)
+          cat > manifest.json <<EOF
+          {
+            "versionCode": ${{ github.run_number }},
+            "versionName": "$VERSION_NAME",
+            "apkUrl": "https://github.com/MiguelaeTxio/miA2FReleases/releases/download/v${{ github.run_number }}/miA2F.apk"
+          }
+          EOF
+          cat manifest.json
+          python3 -m json.tool manifest.json > /dev/null && echo "[JSON OK]"
+
+      - name: Preparar APK con nombre fijo para el asset de la Release
+        run: cp app/build/outputs/apk/debug/app-debug.apk miA2F.apk
+
+      - name: Publicar Release en miA2FReleases
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: MiguelaeTxio/miA2FReleases
+          token: ${{ secrets.RELEASES_REPO_LAST_TOKEN }}
+          tag_name: v${{ github.run_number }}
+          name: miA2F v${{ github.run_number }}
+          files: |
+            miA2F.apk
+            manifest.json
