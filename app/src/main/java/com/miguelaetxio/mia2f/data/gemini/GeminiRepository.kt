@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.miguelaetxio.mia2f.data.course.Concept
 import com.miguelaetxio.mia2f.data.course.CourseUnit
 import com.miguelaetxio.mia2f.data.settings.ApiKeyStore
+import com.miguelaetxio.mia2f.data.speech.DialogueLine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -454,6 +455,198 @@ class GeminiRepository @Inject constructor(
         }
     }
 
+    /**
+     * Asks Gemini for a listening practice on the unit: a short A2
+     * dialogue between two speakers and comprehension questions in
+     * Spanish, each tied to a concept of the unit. Never throws.
+     * ---
+     * Pide a Gemini una práctica de escucha de la unidad: un diálogo
+     * corto de A2 entre dos interlocutores y preguntas de comprensión
+     * en castellano, cada una ligada a un concepto de la unidad. Nunca
+     * lanza.
+     */
+    suspend fun generateListening(
+        unit: CourseUnit,
+        progressSummary: String,
+    ): TeacherResult<ListeningPractice> {
+        val conceptIds = unit.concepts.map { it.id }
+        val prompt = "Unidad ${unit.number}: ${unit.title}\n\n" +
+            "Objetivos de la unidad:\n" +
+            unit.canDo.joinToString("\n") { "- ${it.text}" } + "\n\n" +
+            "Conceptos de la unidad:\n" +
+            describeConcepts(unit.concepts) + "\n\n" +
+            "Progreso del alumno:\n$progressSummary\n\n" +
+            "Escribe un diálogo en francés entre dos personas (A y B), " +
+            "de $MIN_LINES a $MAX_LINES réplicas cortas, natural y propio " +
+            "de un A2, sobre una situación de la unidad y con su " +
+            "vocabulario y gramática. El alumno lo escuchará sin ver el " +
+            "texto. Después escribe $QUESTION_COUNT preguntas de " +
+            "comprensión en castellano que se respondan con lo que se " +
+            "oye en el diálogo, cada una con el concepto de la lista " +
+            "que pone a prueba, dando prioridad a los que están en " +
+            "observación. El alumno responderá en castellano."
+        val schema = mapOf(
+            "type" to "object",
+            "properties" to mapOf(
+                "dialogue" to mapOf(
+                    "type" to "array",
+                    "minItems" to MIN_LINES,
+                    "maxItems" to MAX_LINES,
+                    "items" to mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "speaker" to mapOf(
+                                "type" to "string",
+                                "enum" to listOf("A", "B"),
+                            ),
+                            "text" to mapOf("type" to "string"),
+                        ),
+                        "required" to listOf("speaker", "text"),
+                    ),
+                ),
+                "questions" to mapOf(
+                    "type" to "array",
+                    "minItems" to QUESTION_COUNT,
+                    "maxItems" to QUESTION_COUNT,
+                    "items" to mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "conceptId" to mapOf(
+                                "type" to "string",
+                                "enum" to conceptIds,
+                            ),
+                            "question" to mapOf("type" to "string"),
+                        ),
+                        "required" to listOf("conceptId", "question"),
+                    ),
+                ),
+            ),
+            "required" to listOf("dialogue", "questions"),
+        )
+        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+            is TeacherResult.Success -> {
+                val parsed = parse(result.value, ListeningJson::class.java)
+                val lines = parsed?.dialogue.orEmpty().mapNotNull {
+                    val text = it.text?.trim()
+                    if (text.isNullOrEmpty()) {
+                        null
+                    } else {
+                        DialogueLine(if (it.speaker == "B") 1 else 0, text)
+                    }
+                }
+                val questions = parsed?.questions.orEmpty().mapNotNull {
+                    val conceptId = it.conceptId
+                    val text = it.question?.trim()
+                    if (conceptId in conceptIds && !text.isNullOrEmpty()) {
+                        GeneratedExercise(conceptId!!, text)
+                    } else {
+                        null
+                    }
+                }
+                if (lines.size < 2 || questions.isEmpty()) {
+                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                } else {
+                    TeacherResult.Success(ListeningPractice(lines, questions))
+                }
+            }
+            is TeacherResult.Error -> result
+            TeacherResult.Offline -> TeacherResult.Offline
+        }
+    }
+
+    /**
+     * Corrects the answer (in Spanish) to one comprehension question,
+     * with the whole dialogue as reference. correctedAnswer is the
+     * expected answer. Never throws.
+     * ---
+     * Corrige la respuesta (en castellano) a una pregunta de
+     * comprensión, con el diálogo completo como referencia.
+     * correctedAnswer es la respuesta esperada. Nunca lanza.
+     */
+    suspend fun correctListeningAnswer(
+        unit: CourseUnit,
+        transcript: String,
+        question: GeneratedExercise,
+        answer: String,
+    ): TeacherResult<AnswerCorrection> {
+        val conceptIds = unit.concepts.map { it.id }
+        val prompt = "Conceptos de la unidad:\n" +
+            describeConcepts(unit.concepts) +
+            "\n\nDiálogo que escuchó el alumno:\n$transcript\n\n" +
+            "Pregunta de comprensión (concepto ${question.conceptId}):\n" +
+            "${question.prompt}\n\n" +
+            "Respuesta del alumno, en castellano:\n$answer\n\n" +
+            "Juzga solo si el alumno ha entendido lo que se dice en el " +
+            "diálogo, no su ortografía en castellano. En " +
+            "«correctedAnswer» va la respuesta correcta en castellano. " +
+            "En «explanation», en castellano, explica qué se dice en el " +
+            "diálogo y, si el alumno se ha equivocado, qué parte no " +
+            "entendió, citando la frase en francés. En «errors», un " +
+            "elemento por cada malentendido, con el concepto de la " +
+            "lista al que corresponde y una descripción breve en " +
+            "castellano. «isCorrect» solo es true si ha entendido bien."
+        val schema = mapOf(
+            "type" to "object",
+            "properties" to mapOf(
+                "isCorrect" to mapOf("type" to "boolean"),
+                "correctedAnswer" to mapOf("type" to "string"),
+                "explanation" to mapOf("type" to "string"),
+                "errors" to mapOf(
+                    "type" to "array",
+                    "items" to mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "conceptId" to mapOf(
+                                "type" to "string",
+                                "enum" to conceptIds,
+                            ),
+                            "description" to mapOf("type" to "string"),
+                        ),
+                        "required" to listOf("conceptId", "description"),
+                    ),
+                ),
+            ),
+            "required" to listOf(
+                "isCorrect", "correctedAnswer", "explanation", "errors",
+            ),
+        )
+        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+            is TeacherResult.Success -> {
+                val parsed = parse(result.value, CorrectionJson::class.java)
+                val isCorrect = parsed?.isCorrect
+                val corrected = parsed?.correctedAnswer?.trim()
+                val explanation = parsed?.explanation?.trim()
+                if (isCorrect == null || corrected.isNullOrEmpty() ||
+                    explanation.isNullOrEmpty()
+                ) {
+                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                } else {
+                    val errors = parsed?.errors.orEmpty().mapNotNull {
+                        val conceptId = it.conceptId
+                        val description = it.description?.trim()
+                        if (conceptId in conceptIds &&
+                            !description.isNullOrEmpty()
+                        ) {
+                            CorrectionError(conceptId!!, description)
+                        } else {
+                            null
+                        }
+                    }
+                    TeacherResult.Success(
+                        AnswerCorrection(
+                            isCorrect = isCorrect && errors.isEmpty(),
+                            correctedAnswer = corrected,
+                            explanation = explanation,
+                            errors = errors,
+                        )
+                    )
+                }
+            }
+            is TeacherResult.Error -> result
+            TeacherResult.Offline -> TeacherResult.Offline
+        }
+    }
+
     private fun describeConcepts(concepts: List<Concept>): String =
         concepts.joinToString("\n") { concept ->
             "- ${concept.id} — ${concept.title}: ${concept.explanation}" +
@@ -557,6 +750,15 @@ class GeminiRepository @Inject constructor(
 
     private class ErrorJson(val conceptId: String?, val description: String?)
 
+    private class ListeningJson(
+        val dialogue: List<LineJson>?,
+        val questions: List<QuestionJson>?,
+    )
+
+    private class LineJson(val speaker: String?, val text: String?)
+
+    private class QuestionJson(val conceptId: String?, val question: String?)
+
     private class SentencesJson(val sentences: List<SentenceJson>?)
 
     private class SentenceJson(val conceptId: String?, val sentence: String?)
@@ -572,6 +774,9 @@ class GeminiRepository @Inject constructor(
         const val MODEL_ID = "gemini-3.5-flash"
         const val EXERCISE_COUNT = 5
         const val SENTENCE_COUNT = 5
+        const val MIN_LINES = 6
+        const val MAX_LINES = 10
+        const val QUESTION_COUNT = 4
         const val PER_CONCEPT_RULES =
             "Escribe exactamente un ejercicio escrito por concepto, bajo " +
                 "la clave de su identificador. Cada ejercicio debe " +

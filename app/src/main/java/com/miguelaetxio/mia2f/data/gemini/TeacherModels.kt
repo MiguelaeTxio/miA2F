@@ -1,5 +1,7 @@
 package com.miguelaetxio.mia2f.data.gemini
 
+import com.miguelaetxio.mia2f.data.speech.DialogueLine
+
 /**
  * Written exercise proposed by Gemini for one concept of the unit.
  * ---
@@ -28,6 +30,19 @@ data class AnswerCorrection(
 data class CorrectionError(
     val conceptId: String,
     val description: String,
+)
+
+/**
+ * A listening practice: the dialogue and its comprehension questions
+ * (prompt = question in Spanish, with the concept it tests).
+ * ---
+ * Una práctica de escucha: el diálogo y sus preguntas de comprensión
+ * (prompt = pregunta en castellano, con el concepto que pone a
+ * prueba).
+ */
+data class ListeningPractice(
+    val lines: List<DialogueLine>,
+    val questions: List<GeneratedExercise>,
 )
 
 /**
