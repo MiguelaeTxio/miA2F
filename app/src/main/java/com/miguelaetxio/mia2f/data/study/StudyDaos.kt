@@ -81,7 +81,28 @@ interface ExerciseDao {
     @Query("SELECT DISTINCT concept_id FROM exercise " +
         "WHERE is_correct = 1")
     suspend fun correctConceptIds(): List<String>
+
+    @Query(
+        "SELECT e.concept_id AS conceptId, e.session_id AS sessionId, " +
+            "s.unit_id AS unitId, s.kind, e.is_correct AS isCorrect " +
+            "FROM exercise e JOIN study_session s ON s.id = e.session_id"
+    )
+    suspend fun outcomes(): List<ExerciseOutcome>
 }
+
+/**
+ * One exercise with the class it belongs to, for the concept states.
+ * ---
+ * Un ejercicio con la clase a la que pertenece, para los estados de
+ * los conceptos.
+ */
+data class ExerciseOutcome(
+    val conceptId: String,
+    val sessionId: Long,
+    val unitId: String,
+    val kind: String,
+    val isCorrect: Boolean?,
+)
 
 /**
  * Access to errors by concept.
@@ -99,4 +120,7 @@ interface ConceptErrorDao {
 
     @Query("SELECT * FROM concept_error ORDER BY id DESC LIMIT :limit")
     suspend fun recent(limit: Int): List<ConceptError>
+
+    @Query("SELECT * FROM concept_error ORDER BY id")
+    suspend fun all(): List<ConceptError>
 }
