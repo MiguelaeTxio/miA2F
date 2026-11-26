@@ -103,4 +103,4 @@ escucha (H07).
 
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
-| S2 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados. |
+| S2 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados. Cierre de sesión (PCS). |
