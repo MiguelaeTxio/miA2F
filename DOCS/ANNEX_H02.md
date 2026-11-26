@@ -88,3 +88,4 @@ solo el curso como datos y su llegada al móvil.
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | — | 2026-11-26 | Hito abierto por PCH. `miCursos` creado por Miguel Ángel. |
+| — | 2026-11-26 (tarde) | Puntos 1-3 hechos en `miCursos`: fuentes del MCER en el README (`c1fe43f`), formato v1 y `tools/validate_course.py` (`eb0fae9`), temario de francés A2 v1 con 12 unidades y 57 conceptos, validado con 0 errores (`38cd920`). Comprobado que `raw.githubusercontent.com/MiguelaeTxio/miCursos/main/index.json` responde 200 sin autenticación. |
