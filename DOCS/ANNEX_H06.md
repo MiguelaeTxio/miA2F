@@ -71,6 +71,29 @@ concepto y cuentan en «Mi progreso» como cualquier otro error.
   ejecución, la primera vez que el alumno va a grabar, con una
   explicación previa en castellano.
 
+### Comprobado en S3 (documentación oficial, 2026-11-26)
+
+- **`TextToSpeech`** (referencia de Android): `setLanguage` devuelve
+  `LANG_MISSING_DATA` (-1) si falta la voz y `LANG_NOT_SUPPORTED` (-2)
+  si no hay ese idioma; `setSpeechRate(1.0)` es la velocidad normal y
+  0.5 la mitad; `speak(CharSequence, int, Bundle, String)`. Las apps
+  que apuntan a Android 11 o superior deben declarar
+  `android.intent.action.TTS_SERVICE` en `<queries>` del manifiesto.
+- **`MediaRecorder`**: `MediaRecorder(Context)` existe desde la API 31
+  y el constructor sin argumentos está obsoleto. Como miA2F tiene
+  `minSdk 26`, hay que usar uno u otro según la versión.
+  `setMaxDuration` se llama entre `setOutputFormat` y `prepare`; al
+  llegar al máximo avisa a `OnInfoListener` con
+  `MEDIA_RECORDER_INFO_MAX_DURATION_REACHED` y se para sola.
+  `RECORD_AUDIO` se declara en el manifiesto y se pide en tiempo de
+  ejecución.
+- **Gemini:** tipos de audio admitidos, entre otros, `audio/aac` y
+  `audio/m4a`; máximo 20 MB por petición. En `generateContent`, el
+  ejemplo REST oficial manda el contenido en línea como `inline_data`
+  con `mime_type` y `data` en base64. La guía de audio ya muestra la
+  nueva API Interactions; la app sigue con `generateContent` v1beta,
+  igual que el resto de llamadas.
+
 ---
 
 ## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
@@ -119,3 +142,4 @@ concepto y cuentan en «Mi progreso» como cualquier otro error.
 |---|---|---|
 | S3 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados; comprobados los formatos de audio de Gemini y los conceptos de fonética del temario (2 de 57). |
 | S3 | 2026-11-26 | Punto 1 hecho (`miCursos` `d04979a`, temario v2): el MCER solo describe inteligibilidad y prosodia en A2; la «Matière sonore» del referencial A2 no está en línea, así que se añade como fuente el *Précis de phonétique* de Inspire 2 (A2, Hachette 2020). Miguel Ángel delega la elección pedagógica. 9 conceptos nuevos: ritmo y acento final y entonación de la pregunta (U1), [y]/[u] (U2), [e]/[ɛ] (U4), liaison (U5), [s]/[z] y [ʃ]/[ʒ] (U7), encadenamiento (U8), [ø]/[œ] y [o]/[ɔ] (U9), r francesa (U10). Total: 11 de 66 conceptos son de fonética. |
+| S3 | 2026-11-26 | Punto 2 hecho: ver «Comprobado en S3». |
