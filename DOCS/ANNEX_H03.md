@@ -160,3 +160,5 @@ Drive (H05), pronunciación (H06) y escucha (H07).
 |---|---|---|
 | S2 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados. |
 | S2 | 2026-11-26 | Punto 1 hecho: documentación de Gemini comprobada y método de `FrancaisA2` leído (ver «Comprobado en S2»). |
+| S2 | 2026-11-26 | Punto 2 hecho: Room 2.8.5 (última estable, comprobada en `developer.android.com/jetpack/androidx/releases/room`; `room-ktx` ya va dentro de `room-runtime`), compilador por KSP, tablas `study_session`, `exercise` y `concept_error`, DAO y `DatabaseModule` (`b791453`, compilación verde). Esquema sin exportar (`exportSchema = false`) porque CI no puede devolver al repo el JSON que genera. |
+| S2 | 2026-11-26 | Punto 3 hecho: `StudyPlanner` elige la unidad (primera con conceptos sin practicar; si no queda ninguna, la de más errores recientes) y redacta el resumen de progreso para Gemini (conceptos practicados y últimos 30 errores con su concepto). |
