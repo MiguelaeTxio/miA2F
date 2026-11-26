@@ -17,6 +17,8 @@ GitHub o vía `newflow-android-edit`. No es una skill.*
 | `RESUMPTION_POINT_PATH` | `DOCS/RESUMPTION_POINT.md` |
 | `RELEASES_REPO` (público, Releases + `manifest.json`) | `MiguelaeTxio/miA2FReleases` |
 | `COURSE_SOURCE_REPO` (curso de chat del que sale el contenido) | `MiguelaeTxio/FrancaisA2` |
+| `GCP_PROJECT` (Gemini API de miA2F; cuenta de facturación `cuenta_pago_el_campus`, nivel de pago) | `miA2F` — ID `mia2f-515910` |
+| `GEMINI_KEY_NAME` (nombre de la clave en AI Studio; el valor nunca vive aquí) | `miA2F Android` |
 
 ## Secrets de GitHub Actions (no vive el valor aquí, solo el nombre)
 
