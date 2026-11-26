@@ -1,22 +1,58 @@
 package com.miguelaetxio.mia2f.ui.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.miguelaetxio.mia2f.data.gemini.GeminiRepository
+import com.miguelaetxio.mia2f.data.gemini.GeminiResult
 import com.miguelaetxio.mia2f.data.settings.ApiKeyStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Settings: saving, identifying and deleting the Gemini API key.
+ * State of the connection test.
  * ---
- * Ajustes: guardar, identificar y borrar la clave de la API de Gemini.
+ * Estado de la prueba de conexión.
+ */
+sealed class ConnectionTestState {
+    object Idle : ConnectionTestState()
+    object Running : ConnectionTestState()
+    data class Done(val result: GeminiResult) : ConnectionTestState()
+}
+
+/**
+ * Settings: saving, identifying and deleting the Gemini API key, and
+ * testing the connection with a real call.
+ * ---
+ * Ajustes: guardar, identificar y borrar la clave de la API de Gemini,
+ * y probar la conexión con una llamada real.
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val apiKeyStore: ApiKeyStore,
+    private val geminiRepository: GeminiRepository,
 ) : ViewModel() {
+
+    private val _testState =
+        MutableStateFlow<ConnectionTestState>(ConnectionTestState.Idle)
+    val testState: StateFlow<ConnectionTestState> = _testState.asStateFlow()
+
+    /**
+     * Sends a sentence to Gemini for correction.
+     * ---
+     * Envía una frase a Gemini para que la corrija.
+     */
+    fun testConnection(sentence: String) {
+        _testState.value = ConnectionTestState.Running
+        viewModelScope.launch {
+            _testState.value = ConnectionTestState.Done(
+                geminiRepository.correctSentence(sentence)
+            )
+        }
+    }
 
     private val _keySuffix = MutableStateFlow(apiKeyStore.keySuffix())
 

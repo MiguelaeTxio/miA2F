@@ -1,5 +1,6 @@
 package com.miguelaetxio.mia2f.di
 
+import com.miguelaetxio.mia2f.data.gemini.GeminiApiService
 import com.miguelaetxio.mia2f.data.remote.AppUpdateApiService
 import dagger.Module
 import dagger.Provides
@@ -25,12 +26,17 @@ object NetworkModule {
 
     private const val GITHUB_BASE_URL = "https://github.com/"
 
+    // Gemini Developer API (REST v1beta), comprobado en línea el
+    // 2026-11-26 en ai.google.dev/api/generate-content.
+    private const val GEMINI_BASE_URL =
+        "https://generativelanguage.googleapis.com/"
+
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
             .build()
 
     @Provides
@@ -44,4 +50,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(AppUpdateApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideGeminiApiService(
+        okHttpClient: OkHttpClient,
+    ): GeminiApiService =
+        Retrofit.Builder()
+            .baseUrl(GEMINI_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GeminiApiService::class.java)
 }

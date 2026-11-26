@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.miguelaetxio.mia2f.data.gemini.GeminiResult
 import com.miguelaetxio.mia2f.ui.update.UpdateCheckSection
 
 /**
@@ -45,6 +47,8 @@ fun SettingsScreen(
     // ---
     // Typed text only lives in memory and is cleared on save.
     var typedKey by remember { mutableStateOf("") }
+    val testState by viewModel.testState.collectAsState()
+    var testSentence by remember { mutableStateOf(DEFAULT_TEST_SENTENCE) }
 
     Column(
         modifier = Modifier
@@ -91,7 +95,42 @@ fun SettingsScreen(
 
         HorizontalDivider()
 
+        Text("Probar conexión con Gemini", style = MaterialTheme.typography.titleMedium)
+        OutlinedTextField(
+            value = testSentence,
+            onValueChange = { testSentence = it },
+            label = { Text("Frase en francés") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Button(
+            onClick = { viewModel.testConnection(testSentence) },
+            enabled = keySuffix != null &&
+                testSentence.isNotBlank() &&
+                testState !is ConnectionTestState.Running,
+        ) {
+            Text("Probar conexión")
+        }
+        when (val state = testState) {
+            is ConnectionTestState.Idle -> Unit
+            is ConnectionTestState.Running -> CircularProgressIndicator()
+            is ConnectionTestState.Done -> when (val result = state.result) {
+                is GeminiResult.Success -> Text(result.text)
+                is GeminiResult.Error -> Text(
+                    result.message,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+
+        HorizontalDivider()
+
         Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
         UpdateCheckSection()
     }
 }
+
+// Frase con errores típicos de passé composé para la prueba.
+// ---
+// Sentence with typical passé composé errors for the test.
+private const val DEFAULT_TEST_SENTENCE =
+    "Hier, nous sommes allé au cinéma et nous sommes mangé une pizza."
