@@ -82,4 +82,7 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.android)
+
+    implementation(libs.markdown.renderer)
+    implementation(libs.markdown.renderer.m3)
 }

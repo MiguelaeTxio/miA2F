@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.data.gemini.GeminiResult
+import com.miguelaetxio.mia2f.ui.common.MarkdownText
 import com.miguelaetxio.mia2f.ui.update.UpdateCheckSection
 
 /**
@@ -114,7 +115,7 @@ fun SettingsScreen(
             is ConnectionTestState.Idle -> Unit
             is ConnectionTestState.Running -> CircularProgressIndicator()
             is ConnectionTestState.Done -> when (val result = state.result) {
-                is GeminiResult.Success -> Text(result.text)
+                is GeminiResult.Success -> MarkdownText(result.text)
                 is GeminiResult.Error -> Text(
                     result.message,
                     color = MaterialTheme.colorScheme.error,
