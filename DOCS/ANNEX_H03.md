@@ -147,10 +147,21 @@ Drive (H05), pronunciación (H06) y escucha (H07).
 6. **Historial de clases.** Pantalla accesible desde el inicio con la
    lista de clases (fecha, unidad, ejercicios hechos, errores) y el
    detalle de cada una.
-7. **Verificación en el móvil de Miguel Ángel.** Una clase completa
+7. **Test para saltar unidad** (añadido en S2, acordado con Miguel
+   Ángel). Botón «Hacer test para saltar unidad» en el inicio. El test
+   es sobre la unidad que toca ahora, con un ejercicio por cada
+   concepto de la unidad, corregido por Gemini igual que en una clase
+   y guardado en el historial marcado como «Test». Se aprueba solo con
+   **todos los ejercicios bien**: la unidad cuenta como superada y la
+   siguiente clase pasa a la unidad siguiente. Si falla alguno, los
+   conceptos acertados cuentan como trabajados y las siguientes clases
+   se centran en los fallados.
+8. **Verificación en el móvil de Miguel Ángel.** Una clase completa
    real; comprobar que las correcciones están en castellano, que no
    callan errores, que los errores salen con su concepto, y que tras
-   cerrar y abrir la app la clase sigue en el historial.
+   cerrar y abrir la app la clase sigue en el historial. Además, un
+   test aprobado (la siguiente clase cambia de unidad) y uno con algún
+   fallo (la siguiente clase sigue en la unidad).
 
 ---
 
@@ -165,3 +176,4 @@ Drive (H05), pronunciación (H06) y escucha (H07).
 | S2 | 2026-11-26 | Punto 4 hecho: `GeminiRepository.generateExercises` (5 ejercicios por clase) y `correctAnswer`, con `generationConfig.responseFormat.text` y esquema cuyo `conceptId` es un `enum` con los conceptos de la unidad; la app vuelve a filtrar y descarta lo que no cuadre. Instrucción de profesora con el método de `FrancaisA2`. `TeacherResult` separa «sin conexión» de los demás errores. |
 | S2 | 2026-11-26 | Punto 5 hecho a falta de verificar en el móvil (punto 7): botón «Empezar clase» en el inicio (activo con temario guardado), `LessonScreen` + `LessonViewModel` en `ui/lesson/`. Cada ejercicio corregido se guarda al momento en Room; al terminar, la clase se cierra (`ended_at`) y se muestra un resumen. Sin conexión, aviso legible y «Reintentar». Cada clase usa un ViewModel nuevo (`hiltViewModel(key = …)`), porque sin NavHost vive en la actividad. |
 | S2 | 2026-11-26 | Punto 6 hecho a falta de verificar en el móvil (punto 7): botón «Historial de clases» en el inicio, `HistoryScreen` + `HistoryViewModel` en `ui/history/`. Lista con fecha, unidad, ejercicios hechos, errores y «sin terminar» si la clase no se cerró (consulta `observeSummaries`); detalle con enunciado, respuesta, corrección y errores por concepto. |
+| S2 | 2026-11-26 | Prueba parcial de Miguel Ángel en su móvil: clase de la unidad 1 con 2 ejercicios hechos y 1 error real («en Madrid» por «à Madrid»), visible en el historial como «sin terminar». Propone saltar unidades con tests; se acuerda y se añade como punto 7 (la verificación pasa a ser el 8). |
