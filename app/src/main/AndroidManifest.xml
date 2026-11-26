@@ -2,16 +2,37 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+        Obligatorio para instalar el APK de actualización vía
+        Intent(ACTION_VIEW) + FileProvider (MiMoo H07). El sistema pide
+        su propia confirmación la primera vez.
+        Required to install the update APK via Intent(ACTION_VIEW) +
+        FileProvider (MiMoo H07). The system asks its own confirmation
+        the first time.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
+        android:name=".MiA2FApp"
         android:allowBackup="false"
         android:label="miA2F"
         android:supportsRtl="true"
         android:theme="@style/Theme.MiA2F">
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

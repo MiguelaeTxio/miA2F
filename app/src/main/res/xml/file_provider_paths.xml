@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Expone únicamente la subcarpeta donde se descarga el APK de
+    actualización (cacheDir/apk_updates/), nunca el cacheDir completo.
+    Exposes only the subfolder where the update APK is downloaded
+    (cacheDir/apk_updates/), never the whole cacheDir.
+-->
+<paths>
+    <cache-path name="apk_updates" path="apk_updates/" />
+</paths>
