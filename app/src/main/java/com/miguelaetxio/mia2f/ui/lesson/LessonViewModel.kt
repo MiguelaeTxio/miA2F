@@ -2,6 +2,7 @@ package com.miguelaetxio.mia2f.ui.lesson
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.miguelaetxio.mia2f.data.backup.ProgressBackupRepository
 import com.miguelaetxio.mia2f.data.course.CourseRepository
 import com.miguelaetxio.mia2f.data.course.CourseUnit
 import com.miguelaetxio.mia2f.data.gemini.AnswerCorrection
@@ -73,6 +74,7 @@ class LessonViewModel @Inject constructor(
     private val studySessionDao: StudySessionDao,
     private val exerciseDao: ExerciseDao,
     private val conceptErrorDao: ConceptErrorDao,
+    private val progressBackupRepository: ProgressBackupRepository,
 ) : ViewModel() {
 
     private val _state =
@@ -288,6 +290,10 @@ class LessonViewModel @Inject constructor(
         val courseUnit = unit ?: return
         viewModelScope.launch {
             studySessionDao.finish(id, System.currentTimeMillis())
+            // La copia la hace el inicio en cuanto se vuelve a él.
+            // ---
+            // The home screen makes the copy as soon as it shows up.
+            progressBackupRepository.markPending()
             val titleOf = courseUnit.concepts.associate { it.id to it.title }
             _state.value = LessonState.Finished(
                 unitTitle = heading(courseUnit),

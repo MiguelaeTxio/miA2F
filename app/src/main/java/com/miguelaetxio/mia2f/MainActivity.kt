@@ -29,6 +29,8 @@ import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
 import com.miguelaetxio.mia2f.ui.course.CourseScreen
 import com.miguelaetxio.mia2f.ui.course.CourseViewModel
 import com.miguelaetxio.mia2f.data.study.StudySession
+import com.miguelaetxio.mia2f.ui.backup.BackupViewModel
+import com.miguelaetxio.mia2f.ui.backup.PendingBackupNotice
 import com.miguelaetxio.mia2f.ui.history.HistoryScreen
 import com.miguelaetxio.mia2f.ui.home.HomeViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
@@ -140,6 +142,7 @@ private fun HomeScreen(
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel(),
 ) {
     val isReviewDue by homeViewModel.isReviewDue.collectAsState()
     val keySuffix by settingsViewModel.keySuffix.collectAsState()
@@ -212,6 +215,7 @@ private fun HomeScreen(
                 }
             }
         }
+        PendingBackupNotice(backupViewModel)
         if (isReviewDue && course != null) {
             // Destacado, pero sin bloquear «Empezar clase».
             // ---

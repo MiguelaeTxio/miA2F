@@ -29,6 +29,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.data.gemini.GeminiResult
+import com.miguelaetxio.mia2f.ui.backup.BackupViewModel
+import com.miguelaetxio.mia2f.ui.backup.DriveBackupSection
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
 import com.miguelaetxio.mia2f.ui.keytransfer.KeyQrDialog
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
@@ -45,6 +47,7 @@ import com.miguelaetxio.mia2f.ui.update.UpdateCheckSection
 fun SettingsScreen(
     onBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel(),
 ) {
     val keySuffix by viewModel.keySuffix.collectAsState()
     // El texto tecleado solo vive en memoria y se borra al guardar.
@@ -73,6 +76,11 @@ fun SettingsScreen(
         // so no scrolling is needed every time.
         Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
         UpdateCheckSection()
+
+        HorizontalDivider()
+
+        Text("Copia en Drive", style = MaterialTheme.typography.titleMedium)
+        DriveBackupSection(backupViewModel)
 
         HorizontalDivider()
 

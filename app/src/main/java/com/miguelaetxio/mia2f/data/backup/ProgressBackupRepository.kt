@@ -28,6 +28,15 @@ sealed class DriveOutcome<out T> {
 
     data object Offline : DriveOutcome<Nothing>()
 
+    /**
+     * Drive already holds a copy this phone never restored or wrote:
+     * overwriting it could wipe the progress made on another phone.
+     * ---
+     * Drive ya tiene una copia que este móvil nunca restauró ni
+     * escribió: sobrescribirla podría borrar el progreso de otro móvil.
+     */
+    data object ForeignCopy : DriveOutcome<Nothing>()
+
     data class Failed(val message: String) : DriveOutcome<Nothing>()
 }
 
@@ -70,24 +79,60 @@ class ProgressBackupRepository @Inject constructor(
      */
     val lastBackupAt: StateFlow<Long?> = _lastBackupAt.asStateFlow()
 
+    private val _isPending =
+        MutableStateFlow(prefs.getBoolean(KEY_PENDING, false))
+
+    /**
+     * True while there is progress not yet copied to Drive.
+     * ---
+     * True mientras haya progreso sin copiar en Drive.
+     */
+    val isPending: StateFlow<Boolean> = _isPending.asStateFlow()
+
+    /**
+     * Records that the progress changed and needs a new copy.
+     * ---
+     * Anota que el progreso ha cambiado y necesita una copia nueva.
+     */
+    fun markPending() {
+        prefs.edit().putBoolean(KEY_PENDING, true).apply()
+        _isPending.value = true
+    }
+
     /**
      * Uploads the current progress, overwriting the previous copy.
+     * Without force, a copy this phone never restored or wrote is not
+     * overwritten (ForeignCopy).
      * ---
-     * Sube el progreso actual, sobrescribiendo la copia anterior.
+     * Sube el progreso actual, sobrescribiendo la copia anterior. Sin
+     * force, no se sobrescribe una copia que este móvil nunca restauró
+     * ni escribió (ForeignCopy).
      */
-    suspend fun upload(): DriveOutcome<Long> = withToken { bearer ->
-        val json = serializer.export()
-        val fileId = findCopy(bearer)?.id ?: driveApiService.createFile(
-            bearer, DriveFileCreate(name = FILE_NAME, mimeType = JSON),
-        ).id
-        driveUploadApiService.uploadContent(
-            bearer, fileId, json.toRequestBody(JSON.toMediaType()),
-        )
-        val now = System.currentTimeMillis()
-        prefs.edit().putLong(KEY_LAST_BACKUP_AT, now).apply()
-        _lastBackupAt.value = now
-        DriveOutcome.Success(now)
-    }
+    suspend fun upload(force: Boolean = false): DriveOutcome<Long> =
+        withToken { bearer ->
+            val existing = findCopy(bearer)
+            if (existing != null && !force &&
+                !prefs.getBoolean(KEY_LINKED, false)
+            ) {
+                return@withToken DriveOutcome.ForeignCopy
+            }
+            val json = serializer.export()
+            val fileId = existing?.id ?: driveApiService.createFile(
+                bearer, DriveFileCreate(name = FILE_NAME, mimeType = JSON),
+            ).id
+            driveUploadApiService.uploadContent(
+                bearer, fileId, json.toRequestBody(JSON.toMediaType()),
+            )
+            val now = System.currentTimeMillis()
+            prefs.edit()
+                .putLong(KEY_LAST_BACKUP_AT, now)
+                .putBoolean(KEY_PENDING, false)
+                .putBoolean(KEY_LINKED, true)
+                .apply()
+            _lastBackupAt.value = now
+            _isPending.value = false
+            DriveOutcome.Success(now)
+        }
 
     /**
      * Downloads and checks the copy; Success(null) if there is none.
@@ -112,6 +157,11 @@ class ProgressBackupRepository @Inject constructor(
      */
     suspend fun restore(copy: DriveCopy) {
         serializer.restore(copy.backup)
+        prefs.edit()
+            .putBoolean(KEY_LINKED, true)
+            .putBoolean(KEY_PENDING, false)
+            .apply()
+        _isPending.value = false
     }
 
     private suspend fun findCopy(bearer: String): DriveFile? =
@@ -142,5 +192,11 @@ class ProgressBackupRepository @Inject constructor(
         const val JSON = "application/json"
         const val PREFS_NAME = "drive_backup"
         const val KEY_LAST_BACKUP_AT = "last_backup_at"
+        const val KEY_PENDING = "pending"
+
+        // Este móvil ya escribió o restauró la copia de Drive.
+        // ---
+        // This phone already wrote or restored the Drive copy.
+        const val KEY_LINKED = "linked"
     }
 }
