@@ -27,6 +27,7 @@ import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
 import com.miguelaetxio.mia2f.ui.course.CourseScreen
 import com.miguelaetxio.mia2f.ui.course.CourseViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
+import com.miguelaetxio.mia2f.ui.lesson.LessonScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,16 +61,31 @@ private fun AppRoot(
     val studentName by profileViewModel.studentName.collectAsState()
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var showCourse by rememberSaveable { mutableStateOf(false) }
+    // Cada clase usa un ViewModel nuevo (clave distinta), porque sin
+    // NavHost el ViewModel vive en la actividad.
+    // ---
+    // Each class gets a fresh ViewModel (new key): without NavHost the
+    // ViewModel lives in the activity.
+    var lessonRun by rememberSaveable { mutableStateOf(0) }
+    var showLesson by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
         name == null ->
             ProfileSetupScreen(onSave = profileViewModel::saveStudentName)
         showSettings -> SettingsScreen(onBack = { showSettings = false })
         showCourse -> CourseScreen(onBack = { showCourse = false })
+        showLesson -> LessonScreen(
+            onBack = { showLesson = false },
+            viewModel = hiltViewModel(key = "lesson-$lessonRun"),
+        )
         else -> HomeScreen(
             studentName = name,
             onOpenSettings = { showSettings = true },
             onOpenCourse = { showCourse = true },
+            onStartLesson = {
+                lessonRun += 1
+                showLesson = true
+            },
         )
     }
 }
@@ -79,6 +95,7 @@ private fun HomeScreen(
     studentName: String,
     onOpenSettings: () -> Unit,
     onOpenCourse: () -> Unit,
+    onStartLesson: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
 ) {
@@ -151,6 +168,9 @@ private fun HomeScreen(
                     }
                 }
             }
+        }
+        Button(onClick = onStartLesson, enabled = course != null) {
+            Text("Empezar clase")
         }
         Button(onClick = onOpenCourse, enabled = course != null) {
             Text("Temario")
