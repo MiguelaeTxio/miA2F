@@ -12,6 +12,19 @@
     -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!--
+        Voz francesa del móvil (H06): Android 11+ exige declarar el
+        servicio de síntesis para poder usarlo (referencia de
+        TextToSpeech).
+        French voice of the phone (H06): Android 11+ requires declaring
+        the speech service to use it (TextToSpeech reference).
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MiA2FApp"
         android:allowBackup="false"
