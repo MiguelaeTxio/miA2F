@@ -104,3 +104,8 @@ escucha (H07).
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | S2 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados. Cierre de sesión (PCS). |
+| S3 | 2026-11-26 | Punto 1 hecho (`ae9af3f`): `ConceptProgressCalculator` con los estados sin trabajar / acertado / en observación / superado; clases ordenadas por `id`; una clase sin terminar cuenta igual, porque sus respuestas ya están guardadas. Consultas nuevas `ExerciseDao.outcomes` y `ConceptErrorDao.all`, sin cambio de esquema. |
+| S3 | 2026-11-26 | Punto 2 hecho (`faa9cd3`): `StudyPlanner` elige unidad por estado; el resumen para Gemini lista en observación (con errores recientes), superados y acertados; la instrucción prioriza los que están en observación y después los no trabajados. Se retira `correctConceptIds`. |
+| S3 | 2026-11-26 | Punto 3 hecho a falta de verificar (`5c3c900`): «Hacer prueba de repaso» destacado tras 3 clases normales terminadas desde el último repaso terminado (los tests no cuentan). Conceptos en observación hasta 8, completados hasta 5 con acertados o superados al azar. Sesión `review` con unidad sintética `review`. `GeminiRepository.generatePerConcept` común a test y repaso; `LessonViewModel`/`LessonScreen` pasan de `isTest` a `kind`; `HomeViewModel` nuevo. |
+| S3 | 2026-11-26 | Punto 4 hecho a falta de verificar (`e530efb`): pantalla «Mi progreso» (`ui/progress/`), recuentos por estado en cada unidad y conceptos con su estado al abrirla; el ViewModel se crea con clave nueva en cada apertura. Historial con «Test · unidad» y «Repaso». |
+| S3 | 2026-11-26 | Miguel Ángel deja la verificación (punto 5) para el final. PCH a H05. |

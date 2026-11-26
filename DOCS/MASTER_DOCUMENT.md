@@ -174,6 +174,7 @@ superado (el error deja de aparecer en al menos dos sesiones
 distintas, como en `FrancaisA2`).
 
 ### Hito 05 — Copia y restauración del progreso en Drive
+(Ver `DOCS/ANNEX_H05.md`)
 Copia del progreso en el Drive de la cuenta de Google de cada
 dispositivo y restauración tras perder o cambiar de teléfono.
 

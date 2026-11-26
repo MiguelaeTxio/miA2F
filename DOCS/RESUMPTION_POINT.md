@@ -11,18 +11,20 @@
 ## Qué hacer en la siguiente sesión — EMPEZAR POR AQUÍ
 
 1. **Empezar directamente, sin preguntar**, por el punto 1 de la hoja
-   de ruta de `DOCS/ANNEX_H04.md` (estado de cada concepto) y seguir
-   en orden.
+   de ruta de `DOCS/ANNEX_H05.md` (Google Cloud, guiado con Miguel
+   Ángel) y seguir en orden.
 2. Si en cualquier momento Miguel Ángel trae resultados de la
-   verificación de H03 (punto 8), atenderlos antes de seguir: todo
-   fallo real se corrige en el momento, con evidencia.
+   verificación de H03 (punto 8) o de H04 (punto 5), atenderlos antes
+   de seguir: todo fallo real se corrige en el momento, con evidencia.
 
 ## Pendientes fuera del hito activo
 
-- **H03, punto 8:** verificación en el móvil de Miguel Ángel (clase
-  completa, test con algún fallo y test aprobado, historial tras
-  cerrar la app). Decidió hacerla al final, junto con la del punto 5
-  de H04. La lista exacta de comprobaciones está en `ANNEX_H03.md`.
+- **H03, punto 8, y H04, punto 5:** verificación en el móvil de
+  Miguel Ángel, que decidió hacer al final y en conjunto. Listas
+  exactas en `ANNEX_H03.md` (clase completa, test con algún fallo y
+  test aprobado, historial tras cerrar la app) y `ANNEX_H04.md`
+  (estados de los conceptos, prueba de repaso tras 3 clases, «Mi
+  progreso»).
 - **H01, punto 8:** verificación en el móvil de la esposa de Miguel
   Ángel (instalar desde
   `https://github.com/MiguelaeTxio/miA2FReleases/releases/latest/download/miA2F.apk`,
