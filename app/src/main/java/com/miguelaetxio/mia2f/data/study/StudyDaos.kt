@@ -25,7 +25,32 @@ interface StudySessionDao {
 
     @Query("SELECT * FROM study_session ORDER BY started_at DESC")
     fun observeAll(): Flow<List<StudySession>>
+
+    @Query(
+        "SELECT s.id, s.unit_id AS unitId, s.started_at AS startedAt, " +
+            "s.ended_at AS endedAt, " +
+            "(SELECT COUNT(*) FROM exercise e WHERE e.session_id = s.id " +
+            "AND e.is_correct IS NOT NULL) AS answered, " +
+            "(SELECT COUNT(*) FROM concept_error c " +
+            "WHERE c.session_id = s.id) AS errors " +
+            "FROM study_session s ORDER BY s.started_at DESC"
+    )
+    fun observeSummaries(): Flow<List<SessionSummary>>
 }
+
+/**
+ * One row of the class history: answered exercises and errors.
+ * ---
+ * Una fila del historial de clases: ejercicios respondidos y errores.
+ */
+data class SessionSummary(
+    val id: Long,
+    val unitId: String,
+    val startedAt: Long,
+    val endedAt: Long?,
+    val answered: Int,
+    val errors: Int,
+)
 
 /**
  * Access to exercises.

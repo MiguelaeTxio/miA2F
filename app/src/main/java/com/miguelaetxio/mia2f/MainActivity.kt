@@ -26,6 +26,7 @@ import com.miguelaetxio.mia2f.ui.profile.ProfileSetupScreen
 import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
 import com.miguelaetxio.mia2f.ui.course.CourseScreen
 import com.miguelaetxio.mia2f.ui.course.CourseViewModel
+import com.miguelaetxio.mia2f.ui.history.HistoryScreen
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.lesson.LessonScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
@@ -68,6 +69,7 @@ private fun AppRoot(
     // ViewModel lives in the activity.
     var lessonRun by rememberSaveable { mutableStateOf(0) }
     var showLesson by rememberSaveable { mutableStateOf(false) }
+    var showHistory by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
         name == null ->
@@ -78,10 +80,12 @@ private fun AppRoot(
             onBack = { showLesson = false },
             viewModel = hiltViewModel(key = "lesson-$lessonRun"),
         )
+        showHistory -> HistoryScreen(onBack = { showHistory = false })
         else -> HomeScreen(
             studentName = name,
             onOpenSettings = { showSettings = true },
             onOpenCourse = { showCourse = true },
+            onOpenHistory = { showHistory = true },
             onStartLesson = {
                 lessonRun += 1
                 showLesson = true
@@ -96,6 +100,7 @@ private fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenCourse: () -> Unit,
     onStartLesson: () -> Unit,
+    onOpenHistory: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
 ) {
@@ -171,6 +176,9 @@ private fun HomeScreen(
         }
         Button(onClick = onStartLesson, enabled = course != null) {
             Text("Empezar clase")
+        }
+        Button(onClick = onOpenHistory) {
+            Text("Historial de clases")
         }
         Button(onClick = onOpenCourse, enabled = course != null) {
             Text("Temario")
