@@ -52,34 +52,37 @@ solo el curso como datos y su llegada al móvil.
 
 ---
 
-## HOJA DE RUTA
+## COMPLETADAS EN S1 (2026-11-26)
 
-1. **Fuentes.** Localizar y leer en línea las fuentes oficiales del
-   MCER para el A2 (descriptores generales y por destreza, volumen
-   complementario) y el referencial de nivel A2 para el francés.
-   Anotar en `miCursos/README.md` qué fuentes se usan y para qué.
-2. **Formato del archivo de curso (v1).** Definir y documentar en
-   `miCursos/README.md` el esquema JSON: un `index.json` raíz con la
-   lista de cursos, y por curso un `course.json` con `id`, `language`,
-   `level`, `version`, `title`, y `units[]`, cada una con `id`,
-   `title`, `canDo[]` (objetivos «soy capaz de…» del MCER), `sources[]`
-   y `concepts[]` (`id`, `type`: `grammar` | `vocabulary` |
-   `communication` | `phonetics`, `title`, `explanation` en
-   castellano, `examples[]` en francés). Incluir un validador
-   (script Python en `miCursos/tools/`, con `py_compile` antes de
-   subirlo) que compruebe el esquema y que los identificadores sean
-   únicos.
-3. **Temario de francés A2.** Redactar `miCursos/fr/A2/course.json`
-   completo según las fuentes del punto 1, pasarlo por el validador y
-   commitearlo en `miCursos`.
-4. **Descarga y caché en la app.** Repositorio en la app que descarga
-   `index.json` y el `course.json` del curso del alumno, lo guarda
-   en el dispositivo, comprueba la versión al arrancar y funciona sin
-   conexión con la copia guardada.
-5. **Pantalla «Temario».** Desde el inicio, lista de unidades y, al
-   tocar una, sus objetivos y conceptos (solo lectura).
-6. **Verificación en el móvil.** Temario visible tras instalar la
-   actualización, y visible también sin conexión.
+Los seis puntos de la hoja de ruta original del hito, todos hechos y
+verificados (detalle y commits en el registro de sesiones):
+
+1. Fuentes oficiales del MCER documentadas en `miCursos/README.md`.
+2. Formato v1 de `index.json` y `course.json` y validador
+   `miCursos/tools/validate_course.py`.
+3. Temario de francés A2 v1: 12 unidades, 57 conceptos, 0 errores.
+4. Descarga y caché del temario en la app (`CourseRepository`).
+5. Pantalla «Temario» con unidades, objetivos y conceptos.
+6. Verificado en el móvil de Miguel Ángel, con y sin conexión.
+
+---
+
+## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
+
+1. **Mensaje de «sin conexión» legible** (petición de Miguel Ángel al
+   cerrar S1). Hoy, sin Internet, el inicio muestra en rojo el texto
+   técnico de la excepción («No se pudo comprobar el temario: Unable
+   to resolve host…»). Sustituirlo así:
+   - Si el fallo es de red (`java.io.IOException`, que incluye
+     `UnknownHostException`) y hay curso guardado: «Sin conexión:
+     usando el temario guardado (versión N).», en el color normal del
+     texto, no en rojo.
+   - Si es de red y no hay curso guardado: «Sin conexión: el temario
+     se descargará en cuanto haya Internet.»
+   - Cualquier otro fallo (respuesta inesperada de GitHub, JSON
+     inválido): se mantiene en rojo con su mensaje.
+   - Criterio de cierre: verificado en el móvil en modo avión (primer
+     caso) y tras volver la conexión (sin aviso).
 
 ---
 
@@ -90,3 +93,4 @@ solo el curso como datos y su llegada al móvil.
 | — | 2026-11-26 | Hito abierto por PCH. `miCursos` creado por Miguel Ángel. |
 | — | 2026-11-26 (tarde) | Puntos 1-3 hechos en `miCursos`: fuentes del MCER en el README (`c1fe43f`), formato v1 y `tools/validate_course.py` (`eb0fae9`), temario de francés A2 v1 con 12 unidades y 57 conceptos, validado con 0 errores (`38cd920`). Comprobado que `raw.githubusercontent.com/MiguelaeTxio/miCursos/main/index.json` responde 200 sin autenticación. |
 | — | 2026-11-26 (tarde) | Puntos 4-6 hechos: descarga y caché del temario desde `miCursos` (v16, `c8a9950`) y pantalla Temario (v17, `00e1b01`). Verificado por Miguel Ángel en su móvil: el inicio muestra «Francés A2 (MCER) — versión 1 del temario, 12 unidades», la unidad 3 se ve completa, y en modo avión el temario sigue disponible desde la copia guardada (con el aviso de que no se pudo comprobar), y al volver la conexión el aviso desaparece. Hoja de ruta de H02 completa. |
+| S1 | 2026-11-26 | Cierre de sesión: registro de lo completado y hoja de ruta nueva (mensaje de «sin conexión» legible). |
