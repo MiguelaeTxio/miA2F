@@ -53,6 +53,41 @@ class StudyPlanner @Inject constructor(
         )
     }
 
+    /**
+     * Concepts of the next review as a pseudo-unit: every concept
+     * under watch (up to 8), topped up to 5 with correct or passed
+     * concepts picked at random. Null if there is nothing to review.
+     * ---
+     * Conceptos de la siguiente prueba de repaso como pseudo-unidad:
+     * todos los conceptos en observación (hasta 8), completados hasta
+     * 5 con conceptos acertados o superados elegidos al azar. Null si
+     * no hay nada que repasar.
+     */
+    suspend fun planReview(course: Course): CourseUnit? {
+        val progress = conceptProgressCalculator.calculate(course)
+        val concepts = course.units
+            .sortedBy { it.number }
+            .flatMap { it.concepts }
+        fun withStatus(vararg statuses: ConceptStatus) = concepts
+            .filter { concept ->
+                progress[concept.id]?.status?.let { it in statuses } == true
+            }
+        val watched = withStatus(ConceptStatus.WATCHED)
+            .take(REVIEW_MAX_CONCEPTS)
+        val topUp = withStatus(ConceptStatus.CORRECT, ConceptStatus.PASSED)
+            .shuffled()
+            .take((REVIEW_MIN_CONCEPTS - watched.size).coerceAtLeast(0))
+        val selected = (watched + topUp).toSet()
+        if (selected.isEmpty()) return null
+        return CourseUnit(
+            id = StudySession.REVIEW_UNIT_ID,
+            number = 0,
+            title = "Prueba de repaso",
+            canDo = emptyList(),
+            concepts = concepts.filter { it in selected },
+        )
+    }
+
     private fun summarize(
         course: Course,
         progress: Map<String, ConceptProgress>,
@@ -81,6 +116,8 @@ class StudyPlanner @Inject constructor(
 
     private companion object {
         const val RECENT_ERRORS_LIMIT = 30
+        const val REVIEW_MAX_CONCEPTS = 8
+        const val REVIEW_MIN_CONCEPTS = 5
         val PENDING = setOf(ConceptStatus.NOT_WORKED, ConceptStatus.WATCHED)
     }
 }

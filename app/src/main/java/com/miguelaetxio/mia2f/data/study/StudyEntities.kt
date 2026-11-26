@@ -24,6 +24,12 @@ data class StudySession(
     companion object {
         const val KIND_LESSON = "lesson"
         const val KIND_TEST = "test"
+        const val KIND_REVIEW = "review"
+
+        // Una prueba de repaso mezcla conceptos de varias unidades.
+        // ---
+        // A review mixes concepts from several units.
+        const val REVIEW_UNIT_ID = "review"
     }
 }
 

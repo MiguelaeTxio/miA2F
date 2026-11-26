@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,7 +28,9 @@ import com.miguelaetxio.mia2f.ui.profile.ProfileSetupScreen
 import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
 import com.miguelaetxio.mia2f.ui.course.CourseScreen
 import com.miguelaetxio.mia2f.ui.course.CourseViewModel
+import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.ui.history.HistoryScreen
+import com.miguelaetxio.mia2f.ui.home.HomeViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.lesson.LessonScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
@@ -69,7 +73,9 @@ private fun AppRoot(
     // ViewModel lives in the activity.
     var lessonRun by rememberSaveable { mutableStateOf(0) }
     var showLesson by rememberSaveable { mutableStateOf(false) }
-    var lessonIsTest by rememberSaveable { mutableStateOf(false) }
+    var lessonKind by rememberSaveable {
+        mutableStateOf(StudySession.KIND_LESSON)
+    }
     var showHistory by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
@@ -79,7 +85,7 @@ private fun AppRoot(
         showCourse -> CourseScreen(onBack = { showCourse = false })
         showLesson -> LessonScreen(
             onBack = { showLesson = false },
-            isTest = lessonIsTest,
+            kind = lessonKind,
             viewModel = hiltViewModel(key = "lesson-$lessonRun"),
         )
         showHistory -> HistoryScreen(onBack = { showHistory = false })
@@ -90,12 +96,17 @@ private fun AppRoot(
             onOpenHistory = { showHistory = true },
             onStartLesson = {
                 lessonRun += 1
-                lessonIsTest = false
+                lessonKind = StudySession.KIND_LESSON
                 showLesson = true
             },
             onStartTest = {
                 lessonRun += 1
-                lessonIsTest = true
+                lessonKind = StudySession.KIND_TEST
+                showLesson = true
+            },
+            onStartReview = {
+                lessonRun += 1
+                lessonKind = StudySession.KIND_REVIEW
                 showLesson = true
             },
         )
@@ -109,10 +120,13 @@ private fun HomeScreen(
     onOpenCourse: () -> Unit,
     onStartLesson: () -> Unit,
     onStartTest: () -> Unit,
+    onStartReview: () -> Unit,
     onOpenHistory: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
+    val isReviewDue by homeViewModel.isReviewDue.collectAsState()
     val keySuffix by settingsViewModel.keySuffix.collectAsState()
     val course by courseViewModel.course.collectAsState()
     val courseNotice by courseViewModel.refreshNotice.collectAsState()
@@ -179,6 +193,37 @@ private fun HomeScreen(
                     }
                     scanError?.let {
                         Text(it, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
+        }
+        if (isReviewDue && course != null) {
+            // Destacado, pero sin bloquear «Empezar clase».
+            // ---
+            // Highlighted, without blocking "Start class".
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor =
+                        MaterialTheme.colorScheme.tertiaryContainer,
+                ),
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        "Llevas 3 clases desde el último repaso. Toca " +
+                            "comprobar lo que ya has trabajado.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(
+                        onClick = onStartReview,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor =
+                                MaterialTheme.colorScheme.tertiary,
+                        ),
+                    ) {
+                        Text("Hacer prueba de repaso")
                     }
                 }
             }

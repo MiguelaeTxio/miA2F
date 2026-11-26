@@ -36,6 +36,14 @@ interface StudySessionDao {
             "FROM study_session s ORDER BY s.started_at DESC"
     )
     fun observeSummaries(): Flow<List<SessionSummary>>
+
+    @Query(
+        "SELECT COUNT(*) FROM study_session WHERE kind = 'lesson' " +
+            "AND ended_at IS NOT NULL AND id > (SELECT COALESCE(MAX(id), " +
+            "0) FROM study_session WHERE kind = 'review' " +
+            "AND ended_at IS NOT NULL)"
+    )
+    fun observeLessonsSinceReview(): Flow<Int>
 }
 
 /**

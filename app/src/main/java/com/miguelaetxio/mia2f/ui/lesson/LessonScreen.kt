@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
 
 /**
@@ -35,10 +36,10 @@ import com.miguelaetxio.mia2f.ui.common.MarkdownText
 @Composable
 fun LessonScreen(
     onBack: () -> Unit,
-    isTest: Boolean,
+    kind: String,
     viewModel: LessonViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(viewModel) { viewModel.start(isTest) }
+    LaunchedEffect(viewModel) { viewModel.start(kind) }
     val state by viewModel.state.collectAsState()
     Column(
         modifier = Modifier
@@ -58,7 +59,7 @@ fun LessonScreen(
             }
             is LessonState.Working -> WorkingContent(
                 state = current,
-                isTest = isTest,
+                kind = kind,
                 onSubmit = viewModel::submit,
                 onNext = viewModel::next,
                 onRetry = viewModel::retry,
@@ -71,7 +72,7 @@ fun LessonScreen(
 @Composable
 private fun WorkingContent(
     state: LessonState.Working,
-    isTest: Boolean,
+    kind: String,
     onSubmit: (String) -> Unit,
     onNext: () -> Unit,
     onRetry: () -> Unit,
@@ -81,7 +82,8 @@ private fun WorkingContent(
     // The answer is cleared when the exercise changes.
     var answer by rememberSaveable(state.number) { mutableStateOf("") }
     Text(
-        (if (isTest) "Test · " else "") + state.unitTitle,
+        (if (kind == StudySession.KIND_TEST) "Test · " else "") +
+            state.unitTitle,
         style = MaterialTheme.typography.titleLarge,
     )
     Text(
@@ -125,7 +127,9 @@ private fun WorkingContent(
                 Text(
                     when {
                         state.number < state.total -> "Siguiente"
-                        isTest -> "Terminar test"
+                        kind == StudySession.KIND_TEST -> "Terminar test"
+                        kind == StudySession.KIND_REVIEW ->
+                            "Terminar repaso"
                         else -> "Terminar clase"
                     }
                 )
@@ -156,12 +160,16 @@ private fun FinishedContent(
     onBack: () -> Unit,
 ) {
     Text(
-        if (state.isTest) "Test terminado" else "Clase terminada",
+        when (state.kind) {
+            StudySession.KIND_TEST -> "Test terminado"
+            StudySession.KIND_REVIEW -> "Repaso terminado"
+            else -> "Clase terminada"
+        },
         style = MaterialTheme.typography.headlineSmall,
     )
     Text(state.unitTitle, style = MaterialTheme.typography.titleMedium)
     Text("${state.correct} de ${state.total} ejercicios correctos.")
-    if (state.isTest) {
+    if (state.kind == StudySession.KIND_TEST) {
         val passed = state.correct == state.total
         Text(
             if (passed) {

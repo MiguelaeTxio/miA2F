@@ -1,6 +1,7 @@
 package com.miguelaetxio.mia2f.data.gemini
 
 import com.google.gson.Gson
+import com.miguelaetxio.mia2f.data.course.Concept
 import com.miguelaetxio.mia2f.data.course.CourseUnit
 import com.miguelaetxio.mia2f.data.settings.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +58,8 @@ class GeminiRepository @Inject constructor(
         val prompt = "Unidad ${unit.number}: ${unit.title}\n\n" +
             "Objetivos de la unidad:\n" +
             unit.canDo.joinToString("\n") { "- ${it.text}" } + "\n\n" +
-            "Conceptos de la unidad:\n" + describeConcepts(unit) + "\n\n" +
+            "Conceptos de la unidad:\n" +
+            describeConcepts(unit.concepts) + "\n\n" +
             "Progreso del alumno:\n$progressSummary\n\n" +
             "Propón $EXERCISE_COUNT ejercicios escritos breves para esta " +
             "clase. Da prioridad a los conceptos de la unidad que están " +
@@ -114,27 +116,54 @@ class GeminiRepository @Inject constructor(
 
     /**
      * Asks Gemini for a unit test: exactly one exercise per concept of
-     * the unit, in the unit's order. The schema has one required
-     * property per concept ID, so none can be missing. Never throws.
+     * the unit, in the unit's order. Never throws.
      * ---
      * Pide a Gemini un test de unidad: exactamente un ejercicio por
-     * concepto de la unidad, en su orden. El esquema tiene una
-     * propiedad obligatoria por identificador de concepto, así que no
-     * puede faltar ninguno. Nunca lanza.
+     * concepto de la unidad, en su orden. Nunca lanza.
      */
     suspend fun generateTest(
         unit: CourseUnit,
+    ): TeacherResult<List<GeneratedExercise>> = generatePerConcept(
+        concepts = unit.concepts,
+        prompt = "Unidad ${unit.number}: ${unit.title}\n\n" +
+            "Conceptos de la unidad:\n" + describeConcepts(unit.concepts) +
+            "\n\nPrepara un test para comprobar si el alumno ya domina " +
+            "esta unidad y puede saltarla. $PER_CONCEPT_RULES",
+    )
+
+    /**
+     * Asks Gemini for a review (continuous assessment): exactly one
+     * exercise per given concept, which may come from several units.
+     * Never throws.
+     * ---
+     * Pide a Gemini una prueba de repaso (evaluación continua):
+     * exactamente un ejercicio por concepto dado, que pueden ser de
+     * varias unidades. Nunca lanza.
+     */
+    suspend fun generateReview(
+        concepts: List<Concept>,
+    ): TeacherResult<List<GeneratedExercise>> = generatePerConcept(
+        concepts = concepts,
+        prompt = "Conceptos que hay que repasar:\n" +
+            describeConcepts(concepts) +
+            "\n\nPrepara una prueba de repaso de evaluación continua " +
+            "para comprobar si el alumno sigue dominando estos " +
+            "conceptos ya trabajados. $PER_CONCEPT_RULES",
+    )
+
+    /**
+     * One exercise per concept, in the given order. The schema has one
+     * required property per concept ID, so none can be missing.
+     * ---
+     * Un ejercicio por concepto, en el orden dado. El esquema tiene una
+     * propiedad obligatoria por identificador, así que no falta
+     * ninguno.
+     */
+    private suspend fun generatePerConcept(
+        concepts: List<Concept>,
+        prompt: String,
     ): TeacherResult<List<GeneratedExercise>> {
-        val conceptIds = unit.concepts.map { it.id }
-        val prompt = "Unidad ${unit.number}: ${unit.title}\n\n" +
-            "Conceptos de la unidad:\n" + describeConcepts(unit) + "\n\n" +
-            "Prepara un test para comprobar si el alumno ya domina esta " +
-            "unidad y puede saltarla. Escribe exactamente un ejercicio " +
-            "escrito por concepto, bajo la clave de su identificador. " +
-            "Cada ejercicio debe demostrar que el alumno domina el " +
-            "concepto, sin pistas que den la respuesta. Enunciado en " +
-            "castellano, con las frases o palabras en francés que haga " +
-            "falta; el alumno responde escribiendo en francés."
+        val conceptIds = concepts.map { it.id }
         val schema = mapOf(
             "type" to "object",
             "properties" to conceptIds.associateWith {
@@ -178,7 +207,8 @@ class GeminiRepository @Inject constructor(
         answer: String,
     ): TeacherResult<AnswerCorrection> {
         val conceptIds = unit.concepts.map { it.id }
-        val prompt = "Conceptos de la unidad:\n" + describeConcepts(unit) +
+        val prompt = "Conceptos de la unidad:\n" +
+            describeConcepts(unit.concepts) +
             "\n\nEjercicio (concepto ${exercise.conceptId}):\n" +
             "${exercise.prompt}\n\n" +
             "Respuesta del alumno:\n$answer\n\n" +
@@ -254,8 +284,8 @@ class GeminiRepository @Inject constructor(
         }
     }
 
-    private fun describeConcepts(unit: CourseUnit): String =
-        unit.concepts.joinToString("\n") { concept ->
+    private fun describeConcepts(concepts: List<Concept>): String =
+        concepts.joinToString("\n") { concept ->
             "- ${concept.id} — ${concept.title}: ${concept.explanation}" +
                 if (concept.examples.isEmpty()) {
                     ""
@@ -353,6 +383,13 @@ class GeminiRepository @Inject constructor(
     private companion object {
         const val MODEL_ID = "gemini-3.5-flash"
         const val EXERCISE_COUNT = 5
+        const val PER_CONCEPT_RULES =
+            "Escribe exactamente un ejercicio escrito por concepto, bajo " +
+                "la clave de su identificador. Cada ejercicio debe " +
+                "demostrar que el alumno domina el concepto, sin pistas " +
+                "que den la respuesta. Enunciado en castellano, con las " +
+                "frases o palabras en francés que haga falta; el alumno " +
+                "responde escribiendo en francés."
         const val OFFLINE_MESSAGE =
             "Sin conexión: hace falta Internet para hablar con Gemini."
         const val UNREADABLE_MESSAGE =

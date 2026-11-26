@@ -49,7 +49,7 @@ sealed class LessonState {
 
     data class Finished(
         val unitTitle: String,
-        val isTest: Boolean,
+        val kind: String,
         val correct: Int,
         val total: Int,
         val errors: List<String>,
@@ -86,19 +86,22 @@ class LessonViewModel @Inject constructor(
     private val corrections = mutableMapOf<Int, AnswerCorrection>()
     private var lastAnswer: String? = null
     private var started = false
-    private var isTest = false
+    private var kind = StudySession.KIND_LESSON
 
     /**
-     * Starts the class once; test = true for a unit test (one exercise
-     * per concept, passed only with all of them right).
+     * Starts the class once. kind is a StudySession kind: a lesson, a
+     * unit test (one exercise per concept, passed only with all of
+     * them right) or a review (one exercise per concept to review).
      * ---
-     * Empieza la clase una sola vez; test = true para un test de
-     * unidad (un ejercicio por concepto, aprobado solo con todos bien).
+     * Empieza la clase una sola vez. kind es un tipo de StudySession:
+     * una clase, un test de unidad (un ejercicio por concepto,
+     * aprobado solo con todos bien) o una prueba de repaso (un
+     * ejercicio por concepto que repasar).
      */
-    fun start(test: Boolean) {
+    fun start(kind: String) {
         if (started) return
         started = true
-        isTest = test
+        this.kind = kind
         load()
     }
 
@@ -118,27 +121,49 @@ class LessonViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = LessonState.Loading(PLANNING)
             val course = courseRepository.course.value
-            val plan = course?.let { studyPlanner.plan(it) }
-            if (plan == null) {
+            if (course == null) {
                 _state.value = LessonState.Failed(
                     "No hay temario guardado todavía.", isOffline = false,
                 )
                 return@launch
             }
-            _state.value = LessonState.Loading(
-                (if (isTest) "Preparando el test de la unidad " else
-                    "Preparando los ejercicios de la unidad ") +
-                    "${plan.unit.number}: ${plan.unit.title}…"
-            )
-            val result = if (isTest) {
-                geminiRepository.generateTest(plan.unit)
+            val result: TeacherResult<List<GeneratedExercise>>
+            val planned: CourseUnit
+            if (kind == StudySession.KIND_REVIEW) {
+                planned = studyPlanner.planReview(course) ?: run {
+                    _state.value = LessonState.Failed(
+                        "Todavía no hay conceptos trabajados que repasar.",
+                        isOffline = false,
+                    )
+                    return@launch
+                }
+                _state.value =
+                    LessonState.Loading("Preparando la prueba de repaso…")
+                result = geminiRepository.generateReview(planned.concepts)
             } else {
-                geminiRepository.generateExercises(
-                    plan.unit, plan.progressSummary,
+                val plan = studyPlanner.plan(course) ?: run {
+                    _state.value = LessonState.Failed(
+                        "El temario no tiene unidades.", isOffline = false,
+                    )
+                    return@launch
+                }
+                planned = plan.unit
+                val isTest = kind == StudySession.KIND_TEST
+                _state.value = LessonState.Loading(
+                    (if (isTest) "Preparando el test de la unidad " else
+                        "Preparando los ejercicios de la unidad ") +
+                        "${planned.number}: ${planned.title}…"
                 )
+                result = if (isTest) {
+                    geminiRepository.generateTest(planned)
+                } else {
+                    geminiRepository.generateExercises(
+                        planned, plan.progressSummary,
+                    )
+                }
             }
             when (result) {
-                is TeacherResult.Success -> begin(plan.unit, result.value)
+                is TeacherResult.Success -> begin(planned, result.value)
                 is TeacherResult.Error -> _state.value =
                     LessonState.Failed(result.message, isOffline = false)
                 TeacherResult.Offline -> _state.value = LessonState.Failed(
@@ -158,11 +183,7 @@ class LessonViewModel @Inject constructor(
             StudySession(
                 unitId = courseUnit.id,
                 startedAt = System.currentTimeMillis(),
-                kind = if (isTest) {
-                    StudySession.KIND_TEST
-                } else {
-                    StudySession.KIND_LESSON
-                },
+                kind = kind,
             )
         )
         val rows = generated.mapIndexed { index, exercise ->
@@ -269,8 +290,8 @@ class LessonViewModel @Inject constructor(
             studySessionDao.finish(id, System.currentTimeMillis())
             val titleOf = courseUnit.concepts.associate { it.id to it.title }
             _state.value = LessonState.Finished(
-                unitTitle = "Unidad ${courseUnit.number}: ${courseUnit.title}",
-                isTest = isTest,
+                unitTitle = heading(courseUnit),
+                kind = kind,
                 correct = corrections.values.count { it.isCorrect },
                 total = exercises.size,
                 errors = corrections.values.flatMap { it.errors }.map {
@@ -289,7 +310,7 @@ class LessonViewModel @Inject constructor(
         val courseUnit = unit ?: return
         val exercise = exercises.getOrNull(current) ?: return
         _state.value = LessonState.Working(
-            unitTitle = "Unidad ${courseUnit.number}: ${courseUnit.title}",
+            unitTitle = heading(courseUnit),
             number = current + 1,
             total = exercises.size,
             conceptTitle = courseUnit.concepts
@@ -302,6 +323,13 @@ class LessonViewModel @Inject constructor(
             isOffline = isOffline,
         )
     }
+
+    private fun heading(courseUnit: CourseUnit): String =
+        if (courseUnit.id == StudySession.REVIEW_UNIT_ID) {
+            courseUnit.title
+        } else {
+            "Unidad ${courseUnit.number}: ${courseUnit.title}"
+        }
 
     private companion object {
         const val PLANNING = "Preparando la clase…"
