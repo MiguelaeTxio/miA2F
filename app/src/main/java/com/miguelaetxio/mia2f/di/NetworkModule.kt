@@ -1,5 +1,6 @@
 package com.miguelaetxio.mia2f.di
 
+import com.miguelaetxio.mia2f.data.course.CourseApiService
 import com.miguelaetxio.mia2f.data.gemini.GeminiApiService
 import com.miguelaetxio.mia2f.data.remote.AppUpdateApiService
 import dagger.Module
@@ -25,6 +26,10 @@ import javax.inject.Singleton
 object NetworkModule {
 
     private const val GITHUB_BASE_URL = "https://github.com/"
+
+    // miCursos, repositorio público de temarios (H02), servido sin
+    // API ni autenticación; comprobado el 2026-11-26 (HTTP 200).
+    private const val COURSES_BASE_URL = "https://raw.githubusercontent.com/"
 
     // Gemini Developer API (REST v1beta), comprobado en línea el
     // 2026-11-26 en ai.google.dev/api/generate-content.
@@ -62,4 +67,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(GeminiApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCourseApiService(
+        okHttpClient: OkHttpClient,
+    ): CourseApiService =
+        Retrofit.Builder()
+            .baseUrl(COURSES_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(CourseApiService::class.java)
 }

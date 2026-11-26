@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.ui.profile.ProfileSetupScreen
 import com.miguelaetxio.mia2f.ui.profile.ProfileViewModel
+import com.miguelaetxio.mia2f.ui.course.CourseViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsViewModel
@@ -74,8 +75,11 @@ private fun HomeScreen(
     studentName: String,
     onOpenSettings: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
+    courseViewModel: CourseViewModel = hiltViewModel(),
 ) {
     val keySuffix by settingsViewModel.keySuffix.collectAsState()
+    val course by courseViewModel.course.collectAsState()
+    val courseError by courseViewModel.refreshMessage.collectAsState()
     val context = LocalContext.current
     var scanError by rememberSaveable { mutableStateOf<String?>(null) }
     Column(
@@ -90,6 +94,16 @@ private fun HomeScreen(
             text = "Bonjour, $studentName !",
             style = MaterialTheme.typography.titleLarge,
         )
+        Text(
+            text = course?.let {
+                "${it.title} — versión ${it.version} del temario, " +
+                    "${it.units.size} unidades."
+            } ?: "Descargando el temario…",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        courseError?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
         if (keySuffix == null) {
             // Primer arranque en el segundo móvil: la clave llega por QR
             // desde el móvil que ya la tiene, sin entrar en AI Studio.
