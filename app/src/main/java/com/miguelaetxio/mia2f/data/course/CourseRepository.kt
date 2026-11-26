@@ -2,6 +2,8 @@ package com.miguelaetxio.mia2f.data.course
 
 import android.content.Context
 import com.google.gson.Gson
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.LogArea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,8 +71,17 @@ class CourseRepository @Inject constructor(
                 tmp.delete()
             }
             _course.value = downloaded
+            AppLog.log(
+                LogArea.APP,
+                "Temario ${entry.id} actualizado a la versión " +
+                    "${downloaded.version}",
+            )
             RefreshResult.Updated(downloaded.version)
         } catch (e: IOException) {
+            AppLog.log(
+                LogArea.APP,
+                "Temario: sin conexión (${e::class.java.simpleName})",
+            )
             // Sin red (incluye UnknownHostException): no es un error del
             // temario, se sigue con la copia guardada si la hay.
             // ---
@@ -78,6 +89,7 @@ class CourseRepository @Inject constructor(
             // error, the cached copy is used if there is one.
             RefreshResult.Offline(_course.value?.version)
         } catch (e: Exception) {
+            AppLog.error(LogArea.APP, "Temario: fallo al comprobarlo", e)
             RefreshResult.Error(
                 "No se pudo comprobar el temario: ${e.message}"
             )

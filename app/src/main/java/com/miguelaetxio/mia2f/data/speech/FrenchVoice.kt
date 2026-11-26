@@ -4,6 +4,8 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.LogArea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -86,6 +88,11 @@ class FrenchVoice @Inject constructor(
         var created: TextToSpeech? = null
         created = TextToSpeech(context) { initStatus ->
             val tts = created
+            AppLog.log(
+                LogArea.SPEECH,
+                "TextToSpeech iniciado con estado $initStatus, motor " +
+                    "${tts?.defaultEngine}",
+            )
             _status.value = if (initStatus != TextToSpeech.SUCCESS ||
                 tts == null
             ) {
@@ -96,6 +103,12 @@ class FrenchVoice @Inject constructor(
                     TextToSpeech.LANG_NOT_SUPPORTED -> VoiceStatus.UNAVAILABLE
                     else -> {
                         speakerVoices = frenchVoices(tts)
+                        AppLog.log(
+                            LogArea.SPEECH,
+                            "Voces francesas elegidas: " +
+                                speakerVoices.joinToString { it.name }
+                                    .ifEmpty { "ninguna (voz por defecto)" },
+                        )
                         tts.setOnUtteranceProgressListener(progress)
                         VoiceStatus.READY
                     }
@@ -120,6 +133,10 @@ class FrenchVoice @Inject constructor(
         }
 
         override fun onError(utteranceId: String?, errorCode: Int) {
+            AppLog.log(
+                LogArea.SPEECH,
+                "Error de voz en $utteranceId: código $errorCode",
+            )
             _isSpeaking.value = false
         }
 

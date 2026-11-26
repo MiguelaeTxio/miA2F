@@ -3,6 +3,8 @@ package com.miguelaetxio.mia2f.data.gemini
 import com.google.gson.Gson
 import com.miguelaetxio.mia2f.data.course.Concept
 import com.miguelaetxio.mia2f.data.course.CourseUnit
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.LogArea
 import com.miguelaetxio.mia2f.data.settings.ApiKeyStore
 import com.miguelaetxio.mia2f.data.speech.DialogueLine
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +38,11 @@ class GeminiRepository @Inject constructor(
      * castellano, con el método de FrancaisA2. Nunca lanza excepciones.
      */
     suspend fun correctSentence(sentence: String): GeminiResult =
-        when (val result = call(CORRECTION_INSTRUCTION, sentence, null)) {
+        when (
+            val result = call(
+                CORRECTION_INSTRUCTION, sentence, null, "prueba de conexión",
+            )
+        ) {
             is TeacherResult.Success -> GeminiResult.Success(result.value)
             is TeacherResult.Error -> GeminiResult.Error(result.message)
             TeacherResult.Offline -> GeminiResult.Error(OFFLINE_MESSAGE)
@@ -92,7 +98,11 @@ class GeminiRepository @Inject constructor(
             ),
             "required" to listOf("exercises"),
         )
-        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+        return when (
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema, "ejercicios de clase",
+            )
+        ) {
             is TeacherResult.Success -> {
                 val parsed = parse(result.value, ExercisesJson::class.java)
                 val exercises = parsed?.exercises.orEmpty().mapNotNull {
@@ -105,7 +115,7 @@ class GeminiRepository @Inject constructor(
                     }
                 }
                 if (exercises.isEmpty()) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("ejercicios de clase", result.value)
                 } else {
                     TeacherResult.Success(exercises)
                 }
@@ -172,7 +182,11 @@ class GeminiRepository @Inject constructor(
             },
             "required" to conceptIds,
         )
-        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+        return when (
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema, "test o repaso",
+            )
+        ) {
             is TeacherResult.Success -> {
                 val parsed: Map<*, *>? = runCatching {
                     gson.fromJson(result.value, Map::class.java)
@@ -183,7 +197,7 @@ class GeminiRepository @Inject constructor(
                         ?.let { GeneratedExercise(id, it) }
                 }
                 if (exercises.size != conceptIds.size) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("test o repaso", result.value)
                 } else {
                     TeacherResult.Success(exercises)
                 }
@@ -245,7 +259,11 @@ class GeminiRepository @Inject constructor(
                 "isCorrect", "correctedAnswer", "explanation", "errors",
             ),
         )
-        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+        return when (
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema, "corrección de ejercicio",
+            )
+        ) {
             is TeacherResult.Success -> {
                 val parsed = parse(result.value, CorrectionJson::class.java)
                 val isCorrect = parsed?.isCorrect
@@ -254,7 +272,7 @@ class GeminiRepository @Inject constructor(
                 if (isCorrect == null || corrected.isNullOrEmpty() ||
                     explanation.isNullOrEmpty()
                 ) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("corrección de ejercicio", result.value)
                 } else {
                     val errors = parsed?.errors.orEmpty().mapNotNull {
                         val conceptId = it.conceptId
@@ -334,7 +352,11 @@ class GeminiRepository @Inject constructor(
             ),
             "required" to listOf("sentences"),
         )
-        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+        return when (
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema, "frases de pronunciación",
+            )
+        ) {
             is TeacherResult.Success -> {
                 val parsed = parse(result.value, SentencesJson::class.java)
                 val sentences = parsed?.sentences.orEmpty().mapNotNull {
@@ -347,7 +369,7 @@ class GeminiRepository @Inject constructor(
                     }
                 }
                 if (sentences.isEmpty()) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("frases de pronunciación", result.value)
                 } else {
                     TeacherResult.Success(sentences)
                 }
@@ -417,7 +439,10 @@ class GeminiRepository @Inject constructor(
         )
         val audio = InlineData(mimeType = audioMimeType, data = audioBase64)
         return when (
-            val result = call(TEACHER_INSTRUCTION, prompt, schema, audio)
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema,
+                "evaluación de pronunciación", audio,
+            )
         ) {
             is TeacherResult.Success -> {
                 val parsed = parse(result.value, FeedbackJson::class.java)
@@ -427,7 +452,7 @@ class GeminiRepository @Inject constructor(
                 if (heard == null || isCorrect == null ||
                     explanation.isNullOrEmpty()
                 ) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("evaluación de pronunciación", result.value)
                 } else {
                     val errors = parsed?.errors.orEmpty().mapNotNull {
                         val conceptId = it.conceptId
@@ -523,7 +548,11 @@ class GeminiRepository @Inject constructor(
             ),
             "required" to listOf("dialogue", "questions"),
         )
-        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+        return when (
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema, "diálogo de escucha",
+            )
+        ) {
             is TeacherResult.Success -> {
                 val parsed = parse(result.value, ListeningJson::class.java)
                 val lines = parsed?.dialogue.orEmpty().mapNotNull {
@@ -544,7 +573,7 @@ class GeminiRepository @Inject constructor(
                     }
                 }
                 if (lines.size < 2 || questions.isEmpty()) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("diálogo de escucha", result.value)
                 } else {
                     TeacherResult.Success(ListeningPractice(lines, questions))
                 }
@@ -610,7 +639,11 @@ class GeminiRepository @Inject constructor(
                 "isCorrect", "correctedAnswer", "explanation", "errors",
             ),
         )
-        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+        return when (
+            val result = call(
+                TEACHER_INSTRUCTION, prompt, schema, "corrección de escucha",
+            )
+        ) {
             is TeacherResult.Success -> {
                 val parsed = parse(result.value, CorrectionJson::class.java)
                 val isCorrect = parsed?.isCorrect
@@ -619,7 +652,7 @@ class GeminiRepository @Inject constructor(
                 if (isCorrect == null || corrected.isNullOrEmpty() ||
                     explanation.isNullOrEmpty()
                 ) {
-                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                    unreadable("corrección de escucha", result.value)
                 } else {
                     val errors = parsed?.errors.orEmpty().mapNotNull {
                         val conceptId = it.conceptId
@@ -657,6 +690,21 @@ class GeminiRepository @Inject constructor(
                 }
         }
 
+    /**
+     * Logs a response that could not be read (its start) and returns
+     * the message for the student.
+     * ---
+     * Registra una respuesta que no se ha podido leer (su comienzo) y
+     * devuelve el mensaje para el alumno.
+     */
+    private fun unreadable(label: String, raw: String): TeacherResult.Error {
+        AppLog.log(
+            LogArea.GEMINI,
+            "$label: respuesta ilegible — ${raw.take(LOG_EXCERPT)}",
+        )
+        return TeacherResult.Error(UNREADABLE_MESSAGE)
+    }
+
     private fun <T> parse(json: String, type: Class<T>): T? =
         runCatching { gson.fromJson(json, type) }.getOrNull()
 
@@ -673,6 +721,7 @@ class GeminiRepository @Inject constructor(
         instruction: String,
         userText: String,
         schema: Map<String, Any>?,
+        label: String,
         audio: InlineData? = null,
     ): TeacherResult<String> = withContext(Dispatchers.IO) {
         val apiKey = apiKeyStore.readKey()
@@ -703,34 +752,57 @@ class GeminiRepository @Inject constructor(
                 )
             },
         )
+        val started = System.currentTimeMillis()
+        val sizes = "texto ${userText.length} car." +
+            (audio?.let { ", audio ${it.data.length} car. base64" } ?: "")
+        fun elapsed() = "${System.currentTimeMillis() - started} ms"
         try {
             val response =
                 geminiApiService.generateContent(MODEL_ID, apiKey, request)
             if (!response.isSuccessful) {
-                val apiMessage = response.errorBody()?.string()?.let {
+                val body = response.errorBody()?.string()
+                val apiMessage = body?.let {
                     runCatching {
                         gson.fromJson(it, GeminiErrorEnvelope::class.java)
                             ?.error?.message
                     }.getOrNull()
                 }
+                AppLog.log(
+                    LogArea.GEMINI,
+                    "$label: HTTP ${response.code()} en ${elapsed()} " +
+                        "($sizes) — " +
+                        (body?.take(LOG_EXCERPT) ?: "sin cuerpo"),
+                )
                 return@withContext TeacherResult.Error(
                     "Error ${response.code()}: " +
                         (apiMessage ?: "respuesta no válida de Gemini.")
                 )
             }
-            val text = response.body()?.candidates
-                ?.firstOrNull()?.content?.parts
+            val candidate = response.body()?.candidates?.firstOrNull()
+            val text = candidate?.content?.parts
                 ?.mapNotNull { it.text }
                 ?.joinToString("")
                 ?.trim()
+            AppLog.log(
+                LogArea.GEMINI,
+                "$label: OK en ${elapsed()} ($sizes), respuesta " +
+                    "${text?.length ?: 0} car., finishReason " +
+                    "${candidate?.finishReason}",
+            )
             if (text.isNullOrEmpty()) {
                 TeacherResult.Error("Gemini no ha devuelto texto.")
             } else {
                 TeacherResult.Success(text)
             }
         } catch (e: IOException) {
+            AppLog.log(
+                LogArea.GEMINI,
+                "$label: sin conexión tras ${elapsed()} — " +
+                    "${e::class.java.simpleName}: ${e.message}",
+            )
             TeacherResult.Offline
         } catch (e: Exception) {
+            AppLog.error(LogArea.GEMINI, "$label: fallo tras ${elapsed()}", e)
             TeacherResult.Error(
                 "No se pudo conectar con Gemini: ${e.message}"
             )
@@ -774,6 +846,7 @@ class GeminiRepository @Inject constructor(
         const val MODEL_ID = "gemini-3.5-flash"
         const val EXERCISE_COUNT = 5
         const val SENTENCE_COUNT = 5
+        const val LOG_EXCERPT = 1000
         const val MIN_LINES = 6
         const val MAX_LINES = 10
         const val QUESTION_COUNT = 4

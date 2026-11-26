@@ -2,6 +2,9 @@ package com.miguelaetxio.mia2f.data.backup
 
 import android.content.Context
 import androidx.activity.result.IntentSenderRequest
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.DebugLogFile
+import com.miguelaetxio.mia2f.data.log.LogArea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -139,6 +142,11 @@ class ProgressBackupRepository @Inject constructor(
             if (existing != null && !force &&
                 !prefs.getBoolean(KEY_LINKED, false)
             ) {
+                AppLog.log(
+                    LogArea.DRIVE,
+                    "Copia no subida: Drive ya tiene una de otro móvil " +
+                        "(${existing.id}, ${existing.modifiedTime})",
+                )
                 return@withToken DriveOutcome.ForeignCopy
             }
             val json = serializer.export()
@@ -157,6 +165,11 @@ class ProgressBackupRepository @Inject constructor(
             _lastBackupAt.value = now
             _isPending.value = false
             _isRestoreOfferDismissed.value = true
+            AppLog.log(
+                LogArea.DRIVE,
+                "Copia subida a $fileId (${json.length} car., " +
+                    "force=$force, existía=${existing != null})",
+            )
             DriveOutcome.Success(now)
         }
 
@@ -167,8 +180,16 @@ class ProgressBackupRepository @Inject constructor(
      */
     suspend fun download(): DriveOutcome<DriveCopy?> = withToken { bearer ->
         val file = findCopy(bearer)
-            ?: return@withToken DriveOutcome.Success(null)
+        if (file == null) {
+            AppLog.log(LogArea.DRIVE, "Restaurar: no hay copia en Drive")
+            return@withToken DriveOutcome.Success(null)
+        }
         val json = driveApiService.download(bearer, file.id).string()
+        AppLog.log(
+            LogArea.DRIVE,
+            "Restaurar: copia ${file.id} (${file.modifiedTime}) " +
+                "descargada, ${json.length} car.",
+        )
         when (val read = serializer.read(json)) {
             is BackupReadResult.Valid ->
                 DriveOutcome.Success(DriveCopy(read.backup))
@@ -183,6 +204,12 @@ class ProgressBackupRepository @Inject constructor(
      */
     suspend fun restore(copy: DriveCopy) {
         serializer.restore(copy.backup)
+        AppLog.log(
+            LogArea.DRIVE,
+            "Progreso restaurado: ${copy.backup.sessions.size} clases, " +
+                "${copy.backup.exercises.size} ejercicios, " +
+                "${copy.backup.errors.size} errores",
+        )
         prefs.edit()
             .putBoolean(KEY_LINKED, true)
             .putBoolean(KEY_PENDING, false)
@@ -190,6 +217,54 @@ class ProgressBackupRepository @Inject constructor(
         _isPending.value = false
         _isRestoreOfferDismissed.value = true
     }
+
+    /**
+     * Uploads the diagnostic logs to the "miA2F - Intercambio Claude"
+     * folder, overwriting each file in place (the folder always holds
+     * just the last upload). Files go in the given order: the manifest
+     * last. Returns how many files were uploaded.
+     * ---
+     * Sube los logs de diagnóstico a la carpeta «miA2F - Intercambio
+     * Claude», sobrescribiendo cada archivo en su sitio (la carpeta
+     * guarda siempre solo la última subida). Los archivos van en el
+     * orden dado: el manifiesto el último. Devuelve cuántos subió.
+     */
+    suspend fun uploadDebugLogs(
+        files: List<DebugLogFile>,
+    ): DriveOutcome<Int> = withToken { bearer ->
+        val folderId = exchangeFolder(bearer)
+        files.forEach { file ->
+            val fileId = driveApiService.listFiles(
+                bearer,
+                "name = '${file.name}' and '$folderId' in parents " +
+                    "and trashed = false",
+            ).files?.firstOrNull()?.id ?: driveApiService.createFile(
+                bearer,
+                DriveFileCreate(
+                    name = file.name,
+                    mimeType = TEXT,
+                    parents = listOf(folderId),
+                ),
+            ).id
+            driveUploadApiService.uploadContent(
+                bearer, fileId, file.content.toRequestBody(TEXT.toMediaType()),
+            )
+        }
+        AppLog.log(
+            LogArea.DRIVE,
+            "Logs subidos a $EXCHANGE_FOLDER: ${files.size} archivos",
+        )
+        DriveOutcome.Success(files.size)
+    }
+
+    private suspend fun exchangeFolder(bearer: String): String =
+        driveApiService.listFiles(
+            bearer,
+            "mimeType = '$FOLDER' and name = '$EXCHANGE_FOLDER' " +
+                "and trashed = false",
+        ).files?.firstOrNull()?.id ?: driveApiService.createFile(
+            bearer, DriveFileCreate(name = EXCHANGE_FOLDER, mimeType = FOLDER),
+        ).id
 
     private suspend fun findCopy(bearer: String): DriveFile? =
         driveApiService.listFiles(
@@ -206,8 +281,20 @@ class ProgressBackupRepository @Inject constructor(
             is DriveAuthorization.Authorized -> try {
                 block("Bearer ${auth.accessToken}")
             } catch (e: IOException) {
+                AppLog.log(
+                    LogArea.DRIVE,
+                    "Sin conexión con Drive — " +
+                        "${e::class.java.simpleName}: ${e.message}",
+                )
                 DriveOutcome.Offline
             } catch (e: HttpException) {
+                val body = runCatching {
+                    e.response()?.errorBody()?.string()
+                }.getOrNull()
+                AppLog.log(
+                    LogArea.DRIVE,
+                    "Drive HTTP ${e.code()} — ${body?.take(1000)}",
+                )
                 DriveOutcome.Failed(
                     "Drive ha respondido con error ${e.code()}."
                 )
@@ -217,6 +304,13 @@ class ProgressBackupRepository @Inject constructor(
     private companion object {
         const val FILE_NAME = "mia2f_progreso.json"
         const val JSON = "application/json"
+        const val TEXT = "text/plain"
+        const val FOLDER = "application/vnd.google-apps.folder"
+
+        // Misma convención que MiMoo (com-actions-relay §7).
+        // ---
+        // Same convention as MiMoo (com-actions-relay §7).
+        const val EXCHANGE_FOLDER = "miA2F - Intercambio Claude"
         const val PREFS_NAME = "drive_backup"
         const val KEY_LAST_BACKUP_AT = "last_backup_at"
         const val KEY_PENDING = "pending"

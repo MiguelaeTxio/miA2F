@@ -33,6 +33,7 @@ import com.miguelaetxio.mia2f.ui.backup.BackupViewModel
 import com.miguelaetxio.mia2f.ui.backup.DriveBackupSection
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
 import com.miguelaetxio.mia2f.ui.keytransfer.KeyQrDialog
+import com.miguelaetxio.mia2f.ui.logs.DebugLogsSection
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.update.UpdateCheckSection
 
@@ -141,6 +142,14 @@ fun SettingsScreen(
         qrKey?.let { key ->
             KeyQrDialog(apiKey = key, onDismiss = { qrKey = null })
         }
+
+        HorizontalDivider()
+
+        Text(
+            "Logs de diagnóstico",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        DebugLogsSection()
 
         HorizontalDivider()
 

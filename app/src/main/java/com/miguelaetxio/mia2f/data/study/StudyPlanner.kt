@@ -2,6 +2,8 @@ package com.miguelaetxio.mia2f.data.study
 
 import com.miguelaetxio.mia2f.data.course.Course
 import com.miguelaetxio.mia2f.data.course.CourseUnit
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.LogArea
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,6 +49,14 @@ class StudyPlanner @Inject constructor(
         } ?: units.maxBy { unit ->
             recentErrors.count { unitOfConcept[it.conceptId] == unit }
         }
+        AppLog.log(
+            LogArea.STUDY,
+            "Plan: unidad ${unit.number} (${unit.id}); estados del curso " +
+                ConceptStatus.entries.joinToString(", ") { status ->
+                    "${status.name}=" +
+                        progress.values.count { it.status == status }
+                },
+        )
         return StudyPlan(
             unit = unit,
             progressSummary = summarize(course, progress),
@@ -78,6 +88,11 @@ class StudyPlanner @Inject constructor(
             .shuffled()
             .take((REVIEW_MIN_CONCEPTS - watched.size).coerceAtLeast(0))
         val selected = (watched + topUp).toSet()
+        AppLog.log(
+            LogArea.STUDY,
+            "Repaso: ${watched.size} en observación + ${topUp.size} de " +
+                "relleno: " + selected.joinToString(", ") { it.id },
+        )
         if (selected.isEmpty()) return null
         return CourseUnit(
             id = StudySession.REVIEW_UNIT_ID,

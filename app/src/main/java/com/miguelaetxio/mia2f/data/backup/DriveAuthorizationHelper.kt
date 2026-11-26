@@ -8,6 +8,8 @@ import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.LogArea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
@@ -98,11 +100,13 @@ class DriveAuthorizationHelper @Inject constructor(
         val pendingIntent = result.pendingIntent
         val token = result.accessToken
         return when {
-            result.hasResolution() && pendingIntent != null ->
+            result.hasResolution() && pendingIntent != null -> {
+                AppLog.log(LogArea.DRIVE, "Drive pide el permiso al alumno")
                 DriveAuthorization.NeedsUserConsent(
                     IntentSenderRequest.Builder(pendingIntent.intentSender)
                         .build()
                 )
+            }
             token != null -> DriveAuthorization.Authorized(token)
             else -> DriveAuthorization.Failed(
                 "Google no ha devuelto acceso a Drive."
@@ -110,14 +114,16 @@ class DriveAuthorizationHelper @Inject constructor(
         }
     }
 
-    private fun failure(e: Exception): DriveAuthorization.Failed =
-        DriveAuthorization.Failed(
+    private fun failure(e: Exception): DriveAuthorization.Failed {
+        AppLog.error(LogArea.DRIVE, "Autorización de Drive fallida", e)
+        return DriveAuthorization.Failed(
             if (e is ApiException) {
                 "Google no ha dado acceso a Drive (código ${e.statusCode})."
             } else {
                 "No se pudo pedir acceso a Drive: ${e.message}"
             }
         )
+    }
 
     private companion object {
         const val DRIVE_FILE_SCOPE =

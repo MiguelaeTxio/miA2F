@@ -3,6 +3,8 @@ package com.miguelaetxio.mia2f.data.speech
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import com.miguelaetxio.mia2f.data.log.AppLog
+import com.miguelaetxio.mia2f.data.log.LogArea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
@@ -77,6 +79,7 @@ class VoiceRecorder @Inject constructor(
             output = file
             true
         } catch (e: Exception) {
+            AppLog.error(LogArea.SPEECH, "No se pudo empezar a grabar", e)
             created.release()
             file.delete()
             false
@@ -104,9 +107,14 @@ class VoiceRecorder @Inject constructor(
             active.release()
         }
         if (!ok || file == null || file.length() == 0L) {
+            AppLog.log(
+                LogArea.SPEECH,
+                "Grabación vacía o fallida (stop correcto: $ok)",
+            )
             file?.delete()
             return null
         }
+        AppLog.log(LogArea.SPEECH, "Grabación de ${file.length()} bytes")
         return Recording(file)
     }
 

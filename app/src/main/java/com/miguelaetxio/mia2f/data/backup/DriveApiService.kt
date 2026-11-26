@@ -76,4 +76,5 @@ data class DriveFileList(
 data class DriveFileCreate(
     @SerializedName("name") val name: String,
     @SerializedName("mimeType") val mimeType: String,
+    @SerializedName("parents") val parents: List<String>? = null,
 )
