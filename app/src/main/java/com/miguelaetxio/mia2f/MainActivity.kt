@@ -37,6 +37,7 @@ import com.miguelaetxio.mia2f.ui.home.HomeViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.lesson.LessonScreen
 import com.miguelaetxio.mia2f.ui.progress.ProgressScreen
+import com.miguelaetxio.mia2f.ui.pronunciation.PronunciationScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -85,6 +86,8 @@ private fun AppRoot(
     // ---
     // New key on every opening so the progress is recomputed.
     var progressRun by rememberSaveable { mutableStateOf(0) }
+    var pronunciationRun by rememberSaveable { mutableStateOf(0) }
+    var showPronunciation by rememberSaveable { mutableStateOf(false) }
     var showProgress by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
@@ -98,6 +101,10 @@ private fun AppRoot(
             viewModel = hiltViewModel(key = "lesson-$lessonRun"),
         )
         showHistory -> HistoryScreen(onBack = { showHistory = false })
+        showPronunciation -> PronunciationScreen(
+            onBack = { showPronunciation = false },
+            viewModel = hiltViewModel(key = "pronunciation-$pronunciationRun"),
+        )
         showProgress -> ProgressScreen(
             onBack = { showProgress = false },
             viewModel = hiltViewModel(key = "progress-$progressRun"),
@@ -107,6 +114,10 @@ private fun AppRoot(
             onOpenSettings = { showSettings = true },
             onOpenCourse = { showCourse = true },
             onOpenHistory = { showHistory = true },
+            onStartPronunciation = {
+                pronunciationRun += 1
+                showPronunciation = true
+            },
             onOpenProgress = {
                 progressRun += 1
                 showProgress = true
@@ -138,6 +149,7 @@ private fun HomeScreen(
     onStartLesson: () -> Unit,
     onStartTest: () -> Unit,
     onStartReview: () -> Unit,
+    onStartPronunciation: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenProgress: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
@@ -251,6 +263,9 @@ private fun HomeScreen(
         }
         Button(onClick = onStartLesson, enabled = course != null) {
             Text("Empezar clase")
+        }
+        Button(onClick = onStartPronunciation, enabled = course != null) {
+            Text("Practicar pronunciación")
         }
         Button(onClick = onStartTest, enabled = course != null) {
             Text("Hacer test para saltar unidad")
