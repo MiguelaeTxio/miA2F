@@ -60,8 +60,10 @@ class GeminiRepository @Inject constructor(
             "Conceptos de la unidad:\n" + describeConcepts(unit) + "\n\n" +
             "Progreso del alumno:\n$progressSummary\n\n" +
             "Propón $EXERCISE_COUNT ejercicios escritos breves para esta " +
-            "clase. Da prioridad a los conceptos sin practicar y a los " +
-            "que tienen errores recientes. Cada ejercicio trabaja un solo " +
+            "clase. Da prioridad a los conceptos de la unidad que están " +
+            "en observación, insistiendo en sus errores recientes; " +
+            "después, a los que el alumno aún no ha trabajado. Cada " +
+            "ejercicio trabaja un solo " +
             "concepto de la lista y su enunciado va en castellano, con " +
             "las frases o palabras en francés que haga falta. El alumno " +
             "responde escribiendo en francés."

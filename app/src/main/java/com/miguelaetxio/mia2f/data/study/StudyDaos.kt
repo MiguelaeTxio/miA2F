@@ -73,15 +73,6 @@ interface ExerciseDao {
     )
     fun observeBySession(sessionId: Long): Flow<List<Exercise>>
 
-    // Un concepto cuenta como trabajado cuando se acierta al menos
-    // una vez (en clase o en test); los fallados siguen pendientes.
-    // ---
-    // A concept counts as worked once answered correctly at least once
-    // (lesson or test); failed ones stay pending.
-    @Query("SELECT DISTINCT concept_id FROM exercise " +
-        "WHERE is_correct = 1")
-    suspend fun correctConceptIds(): List<String>
-
     @Query(
         "SELECT e.concept_id AS conceptId, e.session_id AS sessionId, " +
             "s.unit_id AS unitId, s.kind, e.is_correct AS isCorrect " +
