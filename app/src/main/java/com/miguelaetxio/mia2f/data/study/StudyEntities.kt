@@ -26,6 +26,7 @@ data class StudySession(
         const val KIND_TEST = "test"
         const val KIND_REVIEW = "review"
         const val KIND_PRONUNCIATION = "pronunciation"
+        const val KIND_LISTENING = "listening"
 
         // Una prueba de repaso mezcla conceptos de varias unidades.
         // ---

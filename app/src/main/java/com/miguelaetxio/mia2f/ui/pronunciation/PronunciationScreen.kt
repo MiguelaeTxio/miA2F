@@ -1,7 +1,6 @@
 package com.miguelaetxio.mia2f.ui.pronunciation
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,10 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.miguelaetxio.mia2f.data.speech.FrenchVoice
 import com.miguelaetxio.mia2f.data.speech.VoiceRecorder
 import com.miguelaetxio.mia2f.data.speech.VoiceStatus
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
+import com.miguelaetxio.mia2f.ui.common.VoiceNotice
 
 /**
  * Pronunciation practice: listen to the model sentence, record it and
@@ -60,7 +59,12 @@ fun PronunciationScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         TextButton(onClick = onBack) { Text("← Volver") }
-        VoiceNotice(voiceStatus, onRecheck = viewModel::recheckVoice)
+        VoiceNotice(
+            status = voiceStatus,
+            unavailableMessage = "Este móvil no tiene voz en francés: " +
+                "puedes leer la frase y grabarla igualmente.",
+            onRecheck = viewModel::recheckVoice,
+        )
         when (val current = state) {
             is PronunciationState.Loading -> {
                 CircularProgressIndicator()
@@ -78,43 +82,6 @@ fun PronunciationScreen(
             is PronunciationState.Finished ->
                 FinishedContent(current, onBack)
         }
-    }
-}
-
-@Composable
-private fun VoiceNotice(status: VoiceStatus, onRecheck: () -> Unit) {
-    val context = LocalContext.current
-    when (status) {
-        VoiceStatus.LOADING, VoiceStatus.READY -> Unit
-        VoiceStatus.MISSING_DATA -> Card {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    "Falta la voz francesa en este móvil. Instálala para " +
-                        "poder escuchar las frases; después pulsa " +
-                        "«Comprobar de nuevo».",
-                )
-                Button(
-                    onClick = {
-                        runCatching {
-                            context.startActivity(
-                                Intent(FrenchVoice.ACTION_INSTALL_VOICE)
-                            )
-                        }
-                    },
-                ) { Text("Instalar la voz francesa") }
-                OutlinedButton(onClick = onRecheck) {
-                    Text("Comprobar de nuevo")
-                }
-            }
-        }
-        VoiceStatus.UNAVAILABLE -> Notice(
-            "Este móvil no tiene voz en francés: puedes leer la frase y " +
-                "grabarla igualmente.",
-            isError = false,
-        )
     }
 }
 

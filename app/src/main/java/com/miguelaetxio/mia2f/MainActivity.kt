@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +38,7 @@ import com.miguelaetxio.mia2f.ui.history.HistoryScreen
 import com.miguelaetxio.mia2f.ui.home.HomeViewModel
 import com.miguelaetxio.mia2f.ui.keytransfer.scanKeyQr
 import com.miguelaetxio.mia2f.ui.lesson.LessonScreen
+import com.miguelaetxio.mia2f.ui.listening.ListeningScreen
 import com.miguelaetxio.mia2f.ui.progress.ProgressScreen
 import com.miguelaetxio.mia2f.ui.pronunciation.PronunciationScreen
 import com.miguelaetxio.mia2f.ui.settings.SettingsScreen
@@ -88,6 +91,8 @@ private fun AppRoot(
     var progressRun by rememberSaveable { mutableStateOf(0) }
     var pronunciationRun by rememberSaveable { mutableStateOf(0) }
     var showPronunciation by rememberSaveable { mutableStateOf(false) }
+    var listeningRun by rememberSaveable { mutableStateOf(0) }
+    var showListening by rememberSaveable { mutableStateOf(false) }
     var showProgress by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
@@ -105,6 +110,10 @@ private fun AppRoot(
             onBack = { showPronunciation = false },
             viewModel = hiltViewModel(key = "pronunciation-$pronunciationRun"),
         )
+        showListening -> ListeningScreen(
+            onBack = { showListening = false },
+            viewModel = hiltViewModel(key = "listening-$listeningRun"),
+        )
         showProgress -> ProgressScreen(
             onBack = { showProgress = false },
             viewModel = hiltViewModel(key = "progress-$progressRun"),
@@ -117,6 +126,10 @@ private fun AppRoot(
             onStartPronunciation = {
                 pronunciationRun += 1
                 showPronunciation = true
+            },
+            onStartListening = {
+                listeningRun += 1
+                showListening = true
             },
             onOpenProgress = {
                 progressRun += 1
@@ -150,6 +163,7 @@ private fun HomeScreen(
     onStartTest: () -> Unit,
     onStartReview: () -> Unit,
     onStartPronunciation: () -> Unit,
+    onStartListening: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenProgress: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
@@ -164,7 +178,9 @@ private fun HomeScreen(
     val context = LocalContext.current
     var scanError by rememberSaveable { mutableStateOf<String?>(null) }
     Column(
-        modifier = Modifier.padding(24.dp),
+        modifier = Modifier
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         Text(
@@ -266,6 +282,9 @@ private fun HomeScreen(
         }
         Button(onClick = onStartPronunciation, enabled = course != null) {
             Text("Practicar pronunciación")
+        }
+        Button(onClick = onStartListening, enabled = course != null) {
+            Text("Escuchar un diálogo")
         }
         Button(onClick = onStartTest, enabled = course != null) {
             Text("Hacer test para saltar unidad")

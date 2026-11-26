@@ -48,18 +48,20 @@ class HistoryViewModel @Inject constructor(
             ?.let { "Unidad ${it.number}: ${it.title}" } ?: unitId
 
     /**
-     * Heading of a class: "Repaso" for a review, "Test · " or
-     * "Pronunciación · " plus the unit, and the unit for a lesson.
+     * Heading of a class: "Repaso" for a review; "Test · ",
+     * "Pronunciación · " or "Escucha · " plus the unit; the unit for a
+     * lesson.
      * ---
-     * Título de una clase: «Repaso» para una prueba de repaso,
-     * «Test · » o «Pronunciación · » y la unidad, y la unidad para una
-     * clase.
+     * Título de una clase: «Repaso» para una prueba de repaso;
+     * «Test · », «Pronunciación · » o «Escucha · » y la unidad; la
+     * unidad para una clase.
      */
     fun sessionTitle(kind: String, unitId: String): String = when (kind) {
         StudySession.KIND_REVIEW -> "Repaso"
         StudySession.KIND_TEST -> "Test · " + unitTitle(unitId)
         StudySession.KIND_PRONUNCIATION ->
             "Pronunciación · " + unitTitle(unitId)
+        StudySession.KIND_LISTENING -> "Escucha · " + unitTitle(unitId)
         else -> unitTitle(unitId)
     }
 
