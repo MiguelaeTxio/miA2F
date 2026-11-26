@@ -13,6 +13,14 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!--
+        Grabación de la voz del alumno para la pronunciación (H06). Se
+        pide en tiempo de ejecución la primera vez que va a grabar.
+        Recording the student's voice for pronunciation (H06). Asked at
+        run time the first time they are about to record.
+    -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!--
         Voz francesa del móvil (H06): Android 11+ exige declarar el
         servicio de síntesis para poder usarlo (referencia de
         TextToSpeech).
