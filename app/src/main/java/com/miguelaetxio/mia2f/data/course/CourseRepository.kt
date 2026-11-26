@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,6 +70,13 @@ class CourseRepository @Inject constructor(
             }
             _course.value = downloaded
             RefreshResult.Updated(downloaded.version)
+        } catch (e: IOException) {
+            // Sin red (incluye UnknownHostException): no es un error del
+            // temario, se sigue con la copia guardada si la hay.
+            // ---
+            // No network (includes UnknownHostException): not a course
+            // error, the cached copy is used if there is one.
+            RefreshResult.Offline(_course.value?.version)
         } catch (e: Exception) {
             RefreshResult.Error(
                 "No se pudo comprobar el temario: ${e.message}"
@@ -100,5 +108,12 @@ class CourseRepository @Inject constructor(
 sealed class RefreshResult {
     object UpToDate : RefreshResult()
     data class Updated(val version: Int) : RefreshResult()
+
+    /**
+     * No network; cachedVersion is null if nothing was ever downloaded.
+     * ---
+     * Sin red; cachedVersion es null si nunca se descargó nada.
+     */
+    data class Offline(val cachedVersion: Int?) : RefreshResult()
     data class Error(val message: String) : RefreshResult()
 }

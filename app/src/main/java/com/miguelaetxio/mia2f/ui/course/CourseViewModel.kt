@@ -13,6 +13,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
+ * Notice shown on the home screen after a refresh.
+ * ---
+ * Aviso que se muestra en el inicio tras una renovación.
+ */
+data class RefreshNotice(val message: String, val isError: Boolean)
+
+/**
  * Exposes the cached course and refreshes it once when created.
  * ---
  * Expone el curso guardado y lo renueva una vez al crearse.
@@ -24,19 +31,36 @@ class CourseViewModel @Inject constructor(
 
     val course: StateFlow<Course?> = courseRepository.course
 
-    private val _refreshMessage = MutableStateFlow<String?>(null)
+    private val _refreshNotice = MutableStateFlow<RefreshNotice?>(null)
 
     /**
-     * Error of the last refresh, or null if it went fine.
+     * Notice of the last refresh, or null if it went fine.
      * ---
-     * Error de la última renovación, o null si fue bien.
+     * Aviso de la última renovación, o null si fue bien.
      */
-    val refreshMessage: StateFlow<String?> = _refreshMessage.asStateFlow()
+    val refreshNotice: StateFlow<RefreshNotice?> =
+        _refreshNotice.asStateFlow()
 
     init {
         viewModelScope.launch {
-            _refreshMessage.value =
-                (courseRepository.refresh() as? RefreshResult.Error)?.message
+            _refreshNotice.value = toNotice(courseRepository.refresh())
         }
     }
+
+    private fun toNotice(result: RefreshResult): RefreshNotice? =
+        when (result) {
+            is RefreshResult.Offline -> RefreshNotice(
+                message = result.cachedVersion?.let {
+                    "Sin conexión: usando el temario guardado " +
+                        "(versión $it)."
+                } ?: ("Sin conexión: el temario se descargará en " +
+                    "cuanto haya Internet."),
+                isError = false,
+            )
+            is RefreshResult.Error -> RefreshNotice(
+                message = result.message,
+                isError = true,
+            )
+            RefreshResult.UpToDate, is RefreshResult.Updated -> null
+        }
 }

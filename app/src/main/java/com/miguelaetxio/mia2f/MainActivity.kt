@@ -84,7 +84,7 @@ private fun HomeScreen(
 ) {
     val keySuffix by settingsViewModel.keySuffix.collectAsState()
     val course by courseViewModel.course.collectAsState()
-    val courseError by courseViewModel.refreshMessage.collectAsState()
+    val courseNotice by courseViewModel.refreshNotice.collectAsState()
     val context = LocalContext.current
     var scanError by rememberSaveable { mutableStateOf<String?>(null) }
     Column(
@@ -106,8 +106,15 @@ private fun HomeScreen(
             } ?: "Descargando el temario…",
             style = MaterialTheme.typography.bodyMedium,
         )
-        courseError?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
+        courseNotice?.let {
+            if (it.isError) {
+                Text(it.message, color = MaterialTheme.colorScheme.error)
+            } else {
+                Text(
+                    it.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
         if (keySuffix == null) {
             // Primer arranque en el segundo móvil: la clave llega por QR
