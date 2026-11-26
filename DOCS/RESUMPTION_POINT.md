@@ -11,15 +11,18 @@
 ## Qué hacer en la siguiente sesión — EMPEZAR POR AQUÍ
 
 1. **Empezar directamente, sin preguntar**, por el punto 1 de la hoja
-   de ruta de `DOCS/ANNEX_H06.md` (conceptos de fonética del temario,
-   con el visto bueno de Miguel Ángel) y seguir en orden.
+   de ruta de `DOCS/ANNEX_H07.md` (documentación de voces de
+   TextToSpeech) y seguir en orden.
 2. Si en cualquier momento Miguel Ángel trae resultados de la
-   verificación de H03 (punto 8), H04 (punto 5) o H05 (punto 7),
+   verificación de H03 (punto 8), H04 (punto 5), H05 (punto 7) o H06
+   (punto 7),
    atenderlos antes de seguir: todo fallo real se corrige en el
    momento, con evidencia.
 
 ## Pendientes fuera del hito activo
 
+- **H06, punto 7:** verificación de la pronunciación en el móvil de
+  Miguel Ángel (lista exacta en `ANNEX_H06.md`).
 - **H05, punto 7:** verificación de la copia y la restauración en
   Drive en los dos móviles (lista exacta en `ANNEX_H05.md`). En el
   móvil de su esposa, al actualizar verá «¿Ya usabas miA2F en otro

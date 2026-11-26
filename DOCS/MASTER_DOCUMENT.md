@@ -184,6 +184,7 @@ Frase modelo con TTS francés, grabación del alumno y comentario de
 Gemini sobre el audio real.
 
 ### Hito 07 — Escucha
+(Ver `DOCS/ANNEX_H07.md`)
 Diálogos cortos reproducidos con TTS y preguntas de comprensión
 corregidas por Gemini.
 

@@ -27,7 +27,8 @@ por primera vez.
 | H03 | `DOCS/ANNEX_H03.md` | PAUSADO |
 | H04 | `DOCS/ANNEX_H04.md` | PAUSADO |
 | H05 | `DOCS/ANNEX_H05.md` | PAUSADO |
-| H06 | `DOCS/ANNEX_H06.md` | ← **EN PROGRESO** |
+| H06 | `DOCS/ANNEX_H06.md` | PAUSADO |
+| H07 | `DOCS/ANNEX_H07.md` | ← **EN PROGRESO** |
 
 ---
 
@@ -61,3 +62,7 @@ por primera vez.
   (verificación en los dos móviles) pendiente, que hará al final junto
   con H03 punto 8 y H04 punto 5. **H06 (Pronunciación) abierto EN
   PROGRESO.**
+- **2026-11-26** — PCH explícito de Miguel Ángel («PCH a H07») en S3.
+  **H06 pasa a PAUSADO** con los puntos 1-6 hechos y el punto 7
+  (verificación en su móvil) pendiente, para el final. **H07 (Escucha)
+  abierto EN PROGRESO.**
