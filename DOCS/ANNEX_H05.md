@@ -106,9 +106,15 @@ nunca, `MASTER_DOCUMENT.md` §2.5), pronunciación (H06) y escucha
   autorizaciones de un test user **caducan a los siete días** del
   consentimiento. En la práctica: una vez por semana, la copia
   automática encontrará que hace falta volver a aceptar el permiso.
-  Pendiente de decisión de Miguel Ángel: dejarlo así (aviso legible en
-  el inicio para aceptar de nuevo) o pasar la app a «In production»
-  (con `drive.file`, que es un scope no sensible).
+  **Decisión de Miguel Ángel (S3): se queda en Testing, como MiMoo.**
+  Publicar («In production») exige URL de página principal y de
+  política de privacidad en Branding (aviso del botón «Publish app»).
+  Y la evidencia real de MiMoo, también en Testing, es que en meses de
+  uso ni Miguel Ángel ni su esposa han tenido que volver a aceptar el
+  permiso: en Android la autorización va por Google Play services con
+  la cuenta del móvil. Si alguna vez Google lo vuelve a pedir, la app
+  lanza la pantalla de permiso como `AutoSyncViewModel.startAutoSync`
+  de MiMoo y continúa la copia.
 
 ---
 
@@ -161,4 +167,5 @@ nunca, `MASTER_DOCUMENT.md` §2.5), pronunciación (H06) y escucha
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | S3 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados a partir del patrón de Drive ya verificado en MiMoo H06. |
+| S3 | 2026-11-26 | Branding completado (nombre, correo de asistencia y de contacto). Intento de publicar descartado: pide URL de página principal y de política de privacidad. Se queda en Testing (ver «Comprobado en S3»). |
 | S3 | 2026-11-26 | Punto 1 hecho con Miguel Ángel en la consola: Google Auth Platform creado en `mia2f-515910` (External, Testing), 2 test users, scope `drive.file`, clientes OAuth `miA2F Android` y `miA2F Web`. Anotado en `SESSION_VARIABLES.md`. La habilitación de la Drive API (Biblioteca) no se confirmó con captura: si la primera llamada a Drive devuelve 403 «API not enabled», es eso. |
