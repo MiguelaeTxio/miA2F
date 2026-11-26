@@ -19,13 +19,13 @@ data class StudyPlan(
 
 /**
  * Chooses the unit of the next class from the course and the local
- * record: the first unit with concepts not practised yet; if all are
- * practised, the unit with most recent errors (ties go to the
+ * record: the first unit with concepts never answered correctly; if
+ * there is none, the unit with most recent errors (ties go to the
  * earliest unit).
  * ---
  * Elige la unidad de la siguiente clase a partir del curso y del
- * registro local: la primera unidad con conceptos sin practicar; si
- * todos lo están, la de más errores recientes (a igualdad, la
+ * registro local: la primera unidad con conceptos nunca acertados; si
+ * no queda ninguna, la de más errores recientes (a igualdad, la
  * primera).
  */
 @Singleton
@@ -37,7 +37,7 @@ class StudyPlanner @Inject constructor(
     suspend fun plan(course: Course): StudyPlan? {
         val units = course.units.sortedBy { it.number }
         if (units.isEmpty()) return null
-        val practised = exerciseDao.practisedConceptIds().toSet()
+        val practised = exerciseDao.correctConceptIds().toSet()
         val recentErrors = conceptErrorDao.recent(RECENT_ERRORS_LIMIT)
         val unitOfConcept = units
             .flatMap { unit -> unit.concepts.map { it.id to unit } }
@@ -73,7 +73,7 @@ class StudyPlanner @Inject constructor(
                     "(${it.conceptId}): ${it.description}"
             }
             .ifEmpty { "- ninguno todavía" }
-        return "Conceptos ya practicados: $practisedLine\n" +
+        return "Conceptos ya acertados: $practisedLine\n" +
             "Errores de las últimas clases:\n$errorLines"
     }
 

@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,8 +35,10 @@ import com.miguelaetxio.mia2f.ui.common.MarkdownText
 @Composable
 fun LessonScreen(
     onBack: () -> Unit,
+    isTest: Boolean,
     viewModel: LessonViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(viewModel) { viewModel.start(isTest) }
     val state by viewModel.state.collectAsState()
     Column(
         modifier = Modifier
@@ -55,6 +58,7 @@ fun LessonScreen(
             }
             is LessonState.Working -> WorkingContent(
                 state = current,
+                isTest = isTest,
                 onSubmit = viewModel::submit,
                 onNext = viewModel::next,
                 onRetry = viewModel::retry,
@@ -67,6 +71,7 @@ fun LessonScreen(
 @Composable
 private fun WorkingContent(
     state: LessonState.Working,
+    isTest: Boolean,
     onSubmit: (String) -> Unit,
     onNext: () -> Unit,
     onRetry: () -> Unit,
@@ -75,7 +80,10 @@ private fun WorkingContent(
     // ---
     // The answer is cleared when the exercise changes.
     var answer by rememberSaveable(state.number) { mutableStateOf("") }
-    Text(state.unitTitle, style = MaterialTheme.typography.titleLarge)
+    Text(
+        (if (isTest) "Test · " else "") + state.unitTitle,
+        style = MaterialTheme.typography.titleLarge,
+    )
     Text(
         "Ejercicio ${state.number} de ${state.total} · " +
             state.conceptTitle,
@@ -115,8 +123,11 @@ private fun WorkingContent(
             }
             Button(onClick = onNext) {
                 Text(
-                    if (state.number < state.total) "Siguiente" else
-                        "Terminar clase"
+                    when {
+                        state.number < state.total -> "Siguiente"
+                        isTest -> "Terminar test"
+                        else -> "Terminar clase"
+                    }
                 )
             }
         }
@@ -144,9 +155,30 @@ private fun FinishedContent(
     state: LessonState.Finished,
     onBack: () -> Unit,
 ) {
-    Text("Clase terminada", style = MaterialTheme.typography.headlineSmall)
+    Text(
+        if (state.isTest) "Test terminado" else "Clase terminada",
+        style = MaterialTheme.typography.headlineSmall,
+    )
     Text(state.unitTitle, style = MaterialTheme.typography.titleMedium)
     Text("${state.correct} de ${state.total} ejercicios correctos.")
+    if (state.isTest) {
+        val passed = state.correct == state.total
+        Text(
+            if (passed) {
+                "Test superado: la unidad cuenta como superada y la " +
+                    "siguiente clase pasa a la unidad siguiente."
+            } else {
+                "Test no superado: hace falta tenerlo todo bien. Las " +
+                    "próximas clases se centran en los conceptos fallados."
+            },
+            style = MaterialTheme.typography.titleSmall,
+            color = if (passed) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.error
+            },
+        )
+    }
     if (state.errors.isEmpty()) {
         Text("Sin errores en esta clase.")
     } else {

@@ -69,6 +69,7 @@ private fun AppRoot(
     // ViewModel lives in the activity.
     var lessonRun by rememberSaveable { mutableStateOf(0) }
     var showLesson by rememberSaveable { mutableStateOf(false) }
+    var lessonIsTest by rememberSaveable { mutableStateOf(false) }
     var showHistory by rememberSaveable { mutableStateOf(false) }
     val name = studentName
     when {
@@ -78,6 +79,7 @@ private fun AppRoot(
         showCourse -> CourseScreen(onBack = { showCourse = false })
         showLesson -> LessonScreen(
             onBack = { showLesson = false },
+            isTest = lessonIsTest,
             viewModel = hiltViewModel(key = "lesson-$lessonRun"),
         )
         showHistory -> HistoryScreen(onBack = { showHistory = false })
@@ -88,6 +90,12 @@ private fun AppRoot(
             onOpenHistory = { showHistory = true },
             onStartLesson = {
                 lessonRun += 1
+                lessonIsTest = false
+                showLesson = true
+            },
+            onStartTest = {
+                lessonRun += 1
+                lessonIsTest = true
                 showLesson = true
             },
         )
@@ -100,6 +108,7 @@ private fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenCourse: () -> Unit,
     onStartLesson: () -> Unit,
+    onStartTest: () -> Unit,
     onOpenHistory: () -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     courseViewModel: CourseViewModel = hiltViewModel(),
@@ -176,6 +185,9 @@ private fun HomeScreen(
         }
         Button(onClick = onStartLesson, enabled = course != null) {
             Text("Empezar clase")
+        }
+        Button(onClick = onStartTest, enabled = course != null) {
+            Text("Hacer test para saltar unidad")
         }
         Button(onClick = onOpenHistory) {
             Text("Historial de clases")

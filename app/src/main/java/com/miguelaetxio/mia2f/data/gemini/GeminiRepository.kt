@@ -111,6 +111,57 @@ class GeminiRepository @Inject constructor(
     }
 
     /**
+     * Asks Gemini for a unit test: exactly one exercise per concept of
+     * the unit, in the unit's order. The schema has one required
+     * property per concept ID, so none can be missing. Never throws.
+     * ---
+     * Pide a Gemini un test de unidad: exactamente un ejercicio por
+     * concepto de la unidad, en su orden. El esquema tiene una
+     * propiedad obligatoria por identificador de concepto, así que no
+     * puede faltar ninguno. Nunca lanza.
+     */
+    suspend fun generateTest(
+        unit: CourseUnit,
+    ): TeacherResult<List<GeneratedExercise>> {
+        val conceptIds = unit.concepts.map { it.id }
+        val prompt = "Unidad ${unit.number}: ${unit.title}\n\n" +
+            "Conceptos de la unidad:\n" + describeConcepts(unit) + "\n\n" +
+            "Prepara un test para comprobar si el alumno ya domina esta " +
+            "unidad y puede saltarla. Escribe exactamente un ejercicio " +
+            "escrito por concepto, bajo la clave de su identificador. " +
+            "Cada ejercicio debe demostrar que el alumno domina el " +
+            "concepto, sin pistas que den la respuesta. Enunciado en " +
+            "castellano, con las frases o palabras en francés que haga " +
+            "falta; el alumno responde escribiendo en francés."
+        val schema = mapOf(
+            "type" to "object",
+            "properties" to conceptIds.associateWith {
+                mapOf("type" to "string")
+            },
+            "required" to conceptIds,
+        )
+        return when (val result = call(TEACHER_INSTRUCTION, prompt, schema)) {
+            is TeacherResult.Success -> {
+                val parsed: Map<*, *>? = runCatching {
+                    gson.fromJson(result.value, Map::class.java)
+                }.getOrNull()
+                val exercises = conceptIds.mapNotNull { id ->
+                    (parsed?.get(id) as? String)?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.let { GeneratedExercise(id, it) }
+                }
+                if (exercises.size != conceptIds.size) {
+                    TeacherResult.Error(UNREADABLE_MESSAGE)
+                } else {
+                    TeacherResult.Success(exercises)
+                }
+            }
+            is TeacherResult.Error -> result
+            TeacherResult.Offline -> TeacherResult.Offline
+        }
+    }
+
+    /**
      * Asks Gemini to correct the student's answer to one exercise.
      * Errors whose concept is not in the unit are dropped. Never
      * throws.

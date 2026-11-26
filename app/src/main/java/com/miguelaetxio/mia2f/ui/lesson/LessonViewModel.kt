@@ -49,6 +49,7 @@ sealed class LessonState {
 
     data class Finished(
         val unitTitle: String,
+        val isTest: Boolean,
         val correct: Int,
         val total: Int,
         val errors: List<String>,
@@ -84,9 +85,21 @@ class LessonViewModel @Inject constructor(
     private var current = 0
     private val corrections = mutableMapOf<Int, AnswerCorrection>()
     private var lastAnswer: String? = null
+    private var started = false
+    private var isTest = false
 
-    init {
-        start()
+    /**
+     * Starts the class once; test = true for a unit test (one exercise
+     * per concept, passed only with all of them right).
+     * ---
+     * Empieza la clase una sola vez; test = true para un test de
+     * unidad (un ejercicio por concepto, aprobado solo con todos bien).
+     */
+    fun start(test: Boolean) {
+        if (started) return
+        started = true
+        isTest = test
+        load()
     }
 
     /**
@@ -96,12 +109,12 @@ class LessonViewModel @Inject constructor(
      */
     fun retry() {
         val answer = lastAnswer
-        if (sessionId == null) start() else if (answer != null) {
+        if (sessionId == null) load() else if (answer != null) {
             submit(answer)
         }
     }
 
-    private fun start() {
+    private fun load() {
         viewModelScope.launch {
             _state.value = LessonState.Loading(PLANNING)
             val course = courseRepository.course.value
@@ -113,14 +126,18 @@ class LessonViewModel @Inject constructor(
                 return@launch
             }
             _state.value = LessonState.Loading(
-                "Preparando los ejercicios de la unidad " +
+                (if (isTest) "Preparando el test de la unidad " else
+                    "Preparando los ejercicios de la unidad ") +
                     "${plan.unit.number}: ${plan.unit.title}…"
             )
-            when (
-                val result = geminiRepository.generateExercises(
+            val result = if (isTest) {
+                geminiRepository.generateTest(plan.unit)
+            } else {
+                geminiRepository.generateExercises(
                     plan.unit, plan.progressSummary,
                 )
-            ) {
+            }
+            when (result) {
                 is TeacherResult.Success -> begin(plan.unit, result.value)
                 is TeacherResult.Error -> _state.value =
                     LessonState.Failed(result.message, isOffline = false)
@@ -141,6 +158,11 @@ class LessonViewModel @Inject constructor(
             StudySession(
                 unitId = courseUnit.id,
                 startedAt = System.currentTimeMillis(),
+                kind = if (isTest) {
+                    StudySession.KIND_TEST
+                } else {
+                    StudySession.KIND_LESSON
+                },
             )
         )
         val rows = generated.mapIndexed { index, exercise ->
@@ -248,6 +270,7 @@ class LessonViewModel @Inject constructor(
             val titleOf = courseUnit.concepts.associate { it.id to it.title }
             _state.value = LessonState.Finished(
                 unitTitle = "Unidad ${courseUnit.number}: ${courseUnit.title}",
+                isTest = isTest,
                 correct = corrections.values.count { it.isCorrect },
                 total = exercises.size,
                 errors = corrections.values.flatMap { it.errors }.map {

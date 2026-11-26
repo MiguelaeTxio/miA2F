@@ -19,7 +19,13 @@ data class StudySession(
     @ColumnInfo(name = "unit_id") val unitId: String,
     @ColumnInfo(name = "started_at") val startedAt: Long,
     @ColumnInfo(name = "ended_at") val endedAt: Long? = null,
-)
+    @ColumnInfo(defaultValue = KIND_LESSON) val kind: String = KIND_LESSON,
+) {
+    companion object {
+        const val KIND_LESSON = "lesson"
+        const val KIND_TEST = "test"
+    }
+}
 
 /**
  * One written exercise of a class. Answer, correction and result stay

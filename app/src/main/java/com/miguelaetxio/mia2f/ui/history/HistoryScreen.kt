@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.miguelaetxio.mia2f.data.study.SessionSummary
+import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.ui.common.MarkdownText
 import java.text.DateFormat
 import java.util.Date
@@ -94,12 +95,14 @@ private fun SessionCard(
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(
-                viewModel.unitTitle(session.unitId),
+                (if (session.kind == StudySession.KIND_TEST) "Test · "
+                else "") + viewModel.unitTitle(session.unitId),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                "${session.answered} ejercicios hechos · " +
-                    "${session.errors} errores" +
+                plural(session.answered, "ejercicio hecho",
+                    "ejercicios hechos") + " · " +
+                    plural(session.errors, "error", "errores") +
                     if (session.endedAt == null) " · sin terminar" else "",
             )
         }
@@ -124,7 +127,8 @@ private fun SessionDetail(
             TextButton(onClick = onBack) { Text("← Historial") }
             session?.let {
                 Text(
-                    viewModel.unitTitle(it.unitId),
+                    (if (it.kind == StudySession.KIND_TEST) "Test · "
+                    else "") + viewModel.unitTitle(it.unitId),
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
@@ -163,6 +167,9 @@ private fun SessionDetail(
         }
     }
 }
+
+private fun plural(count: Int, one: String, many: String): String =
+    "$count " + if (count == 1) one else many
 
 private fun formatDate(millis: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT)

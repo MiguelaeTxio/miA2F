@@ -28,6 +28,7 @@ object DatabaseModule {
         @ApplicationContext context: Context,
     ): StudyDatabase =
         Room.databaseBuilder(context, StudyDatabase::class.java, "study.db")
+            .addMigrations(StudyDatabase.MIGRATION_1_2)
             .build()
 
     @Provides
