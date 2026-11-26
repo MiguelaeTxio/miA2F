@@ -59,6 +59,20 @@ contesta preguntas de comprensión que corrige Gemini con el método de
   que el historial la muestre.
 - **Copia en Drive (H05):** al terminar, `markPending()`.
 
+### Comprobado en S3 (referencia de Android, 2026-11-26)
+
+- `getVoices()` devuelve el conjunto de voces del motor (puede haber
+  varias por idioma); `setVoice(Voice)` admite una de ellas y devuelve
+  `SUCCESS` o `ERROR`. Cada `Voice` dice su idioma (`getLocale`), su
+  nombre único (`getName`) y si necesita red
+  (`isNetworkConnectionRequired`).
+- `setPitch(1.0)` es el tono normal; valores menores lo bajan.
+- `QUEUE_ADD` añade al final de la cola de reproducción.
+- `UtteranceProgressListener`: `onStart`, `onDone` (todo el audio ya
+  sonó), `onError(String, int)` y `onStop` (al parar o al vaciar la
+  cola con `QUEUE_FLUSH`). Sus avisos pueden llegar desde varios
+  hilos.
+
 ---
 
 ## HOJA DE RUTA PARA LA SIGUIENTE SESIÓN
@@ -92,3 +106,4 @@ contesta preguntas de comprensión que corrige Gemini con el método de
 | Sesión | Fecha | Trabajo realizado |
 |---|---|---|
 | S3 | 2026-11-26 | Hito abierto por PCH. Anexo y hoja de ruta creados. |
+| S3 | 2026-11-26 | Punto 1 hecho: ver «Comprobado en S3». |
