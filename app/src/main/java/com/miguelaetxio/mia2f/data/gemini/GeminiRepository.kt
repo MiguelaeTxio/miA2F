@@ -233,7 +233,7 @@ class GeminiRepository @Inject constructor(
             "bien, dilo. En «errors» va un elemento por cada error, con el " +
             "concepto de la lista al que corresponde y una descripción " +
             "breve en castellano. «isCorrect» solo es true si no hay " +
-            "ningún error."
+            "ningún error. $MINOR_SLIPS_RULE"
         val schema = mapOf(
             "type" to "object",
             "properties" to mapOf(
@@ -846,6 +846,22 @@ class GeminiRepository @Inject constructor(
         const val MODEL_ID = "gemini-3.5-flash"
         const val EXERCISE_COUNT = 5
         const val SENTENCE_COUNT = 5
+
+        // Petición de Miguel Ángel (S3): los despistes de escritura no
+        // bloquean. Se comentan para no callarlos, pero no cuentan.
+        // ---
+        // Miguel Ángel's request (S3): typing slips do not block. They
+        // are mentioned, so nothing is hidden, but they do not count.
+        const val MINOR_SLIPS_RULE =
+            "Los despistes de escritura NO son errores: puntuación " +
+                "(punto final, comas, signos), guiones, mayúsculas, " +
+                "espacios, comillas o apóstrofos tipográficos, y una " +
+                "letra cambiada, repetida o comida por despiste cuando " +
+                "no forma otra palabra ni cambia la gramática. No van " +
+                "en «errors» ni hacen falsa «isCorrect»; menciónalos al " +
+                "final de «explanation» como «Detalle de escritura». Sí " +
+                "son errores las tildes que faltan o sobran y cualquier " +
+                "fallo de gramática, vocabulario o concordancia."
         const val LOG_EXCERPT = 1000
         const val MIN_LINES = 6
         const val MAX_LINES = 10
