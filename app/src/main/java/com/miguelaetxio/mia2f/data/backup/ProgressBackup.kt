@@ -10,6 +10,8 @@ import com.miguelaetxio.mia2f.data.study.ExerciseDao
 import com.miguelaetxio.mia2f.data.study.StudyDatabase
 import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.data.study.StudySessionDao
+import com.miguelaetxio.mia2f.data.study.WritingSlip
+import com.miguelaetxio.mia2f.data.study.WritingSlipDao
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,6 +31,10 @@ data class ProgressBackup(
     val sessions: List<StudySession>,
     val exercises: List<Exercise>,
     val errors: List<ConceptError>,
+    // Desde el formato 2 (BD v3); null en copias anteriores.
+    // ---
+    // Since format 2 (DB v3); null in older copies.
+    val writingSlips: List<WritingSlip>?,
 )
 
 /**
@@ -56,6 +62,7 @@ class ProgressBackupSerializer @Inject constructor(
     private val studySessionDao: StudySessionDao,
     private val exerciseDao: ExerciseDao,
     private val conceptErrorDao: ConceptErrorDao,
+    private val writingSlipDao: WritingSlipDao,
     private val profileRepository: ProfileRepository,
 ) {
 
@@ -76,6 +83,7 @@ class ProgressBackupSerializer @Inject constructor(
                 sessions = studySessionDao.all(),
                 exercises = exerciseDao.all(),
                 errors = conceptErrorDao.all(),
+                writingSlips = writingSlipDao.all(),
             )
         }
         return gson.toJson(backup)
@@ -104,6 +112,9 @@ class ProgressBackupSerializer @Inject constructor(
             } &&
             backup.errors.none {
                 it.conceptId == null || it.description == null
+            } &&
+            backup.writingSlips.orEmpty().none {
+                it.type == null || it.description == null
             }
         if (backup == null || !complete) {
             return BackupReadResult.Invalid(
@@ -128,17 +139,19 @@ class ProgressBackupSerializer @Inject constructor(
      */
     suspend fun restore(backup: ProgressBackup) {
         database.withTransaction {
+            writingSlipDao.deleteAll()
             conceptErrorDao.deleteAll()
             exerciseDao.deleteAll()
             studySessionDao.deleteAll()
             studySessionDao.insertAll(backup.sessions)
             exerciseDao.insertAll(backup.exercises)
             conceptErrorDao.insertAll(backup.errors)
+            writingSlipDao.insertAll(backup.writingSlips.orEmpty())
         }
         backup.studentName?.let { profileRepository.saveStudentName(it) }
     }
 
     private companion object {
-        const val FORMAT_VERSION = 1
+        const val FORMAT_VERSION = 2
     }
 }

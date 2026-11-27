@@ -25,6 +25,31 @@ data class AnswerCorrection(
     val correctedAnswer: String,
     val explanation: String,
     val errors: List<CorrectionError>,
+    val slips: List<SlipReport> = emptyList(),
+)
+
+/**
+ * Kind of writing slip: a minor fault, serious only when repeated.
+ * ---
+ * Tipo de despiste de escritura: falta leve, grave solo si se repite.
+ */
+enum class SlipType(val label: String) {
+    PUNCTUATION("puntuación"),
+    HYPHEN("guiones"),
+    CAPITALS("mayúsculas"),
+    SPACING("espacios"),
+    QUOTES("comillas y apóstrofos"),
+    LETTER("letras cambiadas por despiste"),
+}
+
+/**
+ * A writing slip reported by Gemini in one answer.
+ * ---
+ * Un despiste de escritura que Gemini señala en una respuesta.
+ */
+data class SlipReport(
+    val type: SlipType,
+    val description: String,
 )
 
 data class CorrectionError(

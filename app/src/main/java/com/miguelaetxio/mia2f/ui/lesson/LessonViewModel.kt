@@ -16,6 +16,7 @@ import com.miguelaetxio.mia2f.data.study.ExerciseDao
 import com.miguelaetxio.mia2f.data.study.StudyPlanner
 import com.miguelaetxio.mia2f.data.study.StudySession
 import com.miguelaetxio.mia2f.data.study.StudySessionDao
+import com.miguelaetxio.mia2f.data.study.WritingSlipPolicy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,6 +76,7 @@ class LessonViewModel @Inject constructor(
     private val exerciseDao: ExerciseDao,
     private val conceptErrorDao: ConceptErrorDao,
     private val progressBackupRepository: ProgressBackupRepository,
+    private val writingSlipPolicy: WritingSlipPolicy,
 ) : ViewModel() {
 
     private val _state =
@@ -224,7 +226,11 @@ class LessonViewModel @Inject constructor(
                     text,
                 )
             ) {
-                is TeacherResult.Success -> save(exercise, text, result.value)
+                is TeacherResult.Success -> save(
+                    exercise,
+                    text,
+                    writingSlipPolicy.apply(exercise, result.value),
+                )
                 is TeacherResult.Error -> showCurrent(
                     isCorrecting = false,
                     message = result.message,

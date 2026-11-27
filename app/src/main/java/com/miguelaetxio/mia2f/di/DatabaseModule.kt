@@ -6,6 +6,7 @@ import com.miguelaetxio.mia2f.data.study.ConceptErrorDao
 import com.miguelaetxio.mia2f.data.study.ExerciseDao
 import com.miguelaetxio.mia2f.data.study.StudyDatabase
 import com.miguelaetxio.mia2f.data.study.StudySessionDao
+import com.miguelaetxio.mia2f.data.study.WritingSlipDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,7 +29,10 @@ object DatabaseModule {
         @ApplicationContext context: Context,
     ): StudyDatabase =
         Room.databaseBuilder(context, StudyDatabase::class.java, "study.db")
-            .addMigrations(StudyDatabase.MIGRATION_1_2)
+            .addMigrations(
+                StudyDatabase.MIGRATION_1_2,
+                StudyDatabase.MIGRATION_2_3,
+            )
             .build()
 
     @Provides
@@ -42,4 +46,8 @@ object DatabaseModule {
     @Provides
     fun provideConceptErrorDao(db: StudyDatabase): ConceptErrorDao =
         db.conceptErrorDao()
+
+    @Provides
+    fun provideWritingSlipDao(db: StudyDatabase): WritingSlipDao =
+        db.writingSlipDao()
 }

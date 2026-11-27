@@ -13,7 +13,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * CI no puede devolver al repositorio el JSON que genera.
  */
 @Database(
-    entities = [StudySession::class, Exercise::class, ConceptError::class],
+    entities = [
+        StudySession::class,
+        Exercise::class,
+        ConceptError::class,
+        WritingSlip::class,
+    ],
     version = StudyDatabase.VERSION,
     exportSchema = false,
 )
@@ -21,6 +26,7 @@ abstract class StudyDatabase : RoomDatabase() {
     abstract fun studySessionDao(): StudySessionDao
     abstract fun exerciseDao(): ExerciseDao
     abstract fun conceptErrorDao(): ConceptErrorDao
+    abstract fun writingSlipDao(): WritingSlipDao
 
     companion object {
 
@@ -29,7 +35,7 @@ abstract class StudyDatabase : RoomDatabase() {
          * ---
          * Versión del esquema; también va en cada copia de Drive.
          */
-        const val VERSION = 2
+        const val VERSION = 3
 
         /**
          * v2 adds the class kind (lesson or unit test); existing rows
@@ -43,6 +49,48 @@ abstract class StudyDatabase : RoomDatabase() {
                 db.execSQL(
                     "ALTER TABLE study_session ADD COLUMN kind TEXT " +
                         "NOT NULL DEFAULT 'lesson'"
+                )
+            }
+        }
+
+        /**
+         * v3 adds writing slips, to count repeated ones (S3). The SQL
+         * matches what Room generates for WritingSlip.
+         * ---
+         * La v3 añade los despistes de escritura, para contar los
+         * reiterados (S3). El SQL coincide con el que genera Room
+         * para WritingSlip.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `writing_slip` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`session_id` INTEGER NOT NULL, " +
+                        "`exercise_id` INTEGER NOT NULL, " +
+                        "`type` TEXT NOT NULL, " +
+                        "`description` TEXT NOT NULL, " +
+                        "`is_serious` INTEGER NOT NULL, " +
+                        "FOREIGN KEY(`session_id`) REFERENCES " +
+                        "`study_session`(`id`) ON UPDATE NO ACTION " +
+                        "ON DELETE CASCADE , " +
+                        "FOREIGN KEY(`exercise_id`) REFERENCES " +
+                        "`exercise`(`id`) ON UPDATE NO ACTION " +
+                        "ON DELETE CASCADE )"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS " +
+                        "`index_writing_slip_session_id` " +
+                        "ON `writing_slip` (`session_id`)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS " +
+                        "`index_writing_slip_exercise_id` " +
+                        "ON `writing_slip` (`exercise_id`)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_writing_slip_type` " +
+                        "ON `writing_slip` (`type`)"
                 )
             }
         }

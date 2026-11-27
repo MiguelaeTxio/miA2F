@@ -141,3 +141,29 @@ interface ConceptErrorDao {
     @Query("DELETE FROM concept_error")
     suspend fun deleteAll()
 }
+
+@Dao
+interface WritingSlipDao {
+
+    @Insert
+    suspend fun insertAll(slips: List<WritingSlip>)
+
+    @Query("SELECT * FROM writing_slip ORDER BY id")
+    suspend fun all(): List<WritingSlip>
+
+    @Query("DELETE FROM writing_slip")
+    suspend fun deleteAll()
+
+    // Avisos previos del mismo tipo en las últimas :window respuestas
+    // corregidas, sin contar la actual.
+    // ---
+    // Earlier slips of the same type in the last :window corrected
+    // answers, not counting the current one.
+    @Query(
+        "SELECT COUNT(*) FROM writing_slip WHERE type = :type " +
+            "AND exercise_id IN (SELECT id FROM exercise " +
+            "WHERE student_answer IS NOT NULL AND id != :exerciseId " +
+            "ORDER BY id DESC LIMIT :window)"
+    )
+    suspend fun countRecent(type: String, exerciseId: Long, window: Int): Int
+}

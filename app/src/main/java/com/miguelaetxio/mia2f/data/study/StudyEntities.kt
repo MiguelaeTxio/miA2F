@@ -99,3 +99,45 @@ data class ConceptError(
     @ColumnInfo(name = "concept_id") val conceptId: String,
     val description: String,
 )
+
+/**
+ * A writing slip (punctuation, hyphen, capital letter...) found in an
+ * answer. type is a SlipType name. isSerious is true when it was the
+ * third time (or more) of the same type: then it also counted as an
+ * error of the exercise.
+ * ---
+ * Un despiste de escritura (puntuación, guion, mayúscula...) en una
+ * respuesta. type es el nombre de un SlipType. isSerious es true
+ * cuando era la tercera vez (o más) del mismo tipo: entonces contó
+ * también como error del ejercicio.
+ */
+@Entity(
+    tableName = "writing_slip",
+    foreignKeys = [
+        ForeignKey(
+            entity = StudySession::class,
+            parentColumns = ["id"],
+            childColumns = ["session_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = Exercise::class,
+            parentColumns = ["id"],
+            childColumns = ["exercise_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index("session_id"),
+        Index("exercise_id"),
+        Index("type"),
+    ],
+)
+data class WritingSlip(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @ColumnInfo(name = "session_id") val sessionId: Long,
+    @ColumnInfo(name = "exercise_id") val exerciseId: Long,
+    val type: String,
+    val description: String,
+    @ColumnInfo(name = "is_serious") val isSerious: Boolean,
+)

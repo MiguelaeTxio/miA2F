@@ -240,6 +240,20 @@ class GeminiRepository @Inject constructor(
                 "isCorrect" to mapOf("type" to "boolean"),
                 "correctedAnswer" to mapOf("type" to "string"),
                 "explanation" to mapOf("type" to "string"),
+                "slips" to mapOf(
+                    "type" to "array",
+                    "items" to mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "type" to mapOf(
+                                "type" to "string",
+                                "enum" to SlipType.entries.map { it.name },
+                            ),
+                            "description" to mapOf("type" to "string"),
+                        ),
+                        "required" to listOf("type", "description"),
+                    ),
+                ),
                 "errors" to mapOf(
                     "type" to "array",
                     "items" to mapOf(
@@ -257,6 +271,7 @@ class GeminiRepository @Inject constructor(
             ),
             "required" to listOf(
                 "isCorrect", "correctedAnswer", "explanation", "errors",
+                "slips",
             ),
         )
         return when (
@@ -285,6 +300,16 @@ class GeminiRepository @Inject constructor(
                             null
                         }
                     }
+                    val slips = parsed?.slips.orEmpty().mapNotNull {
+                        val type = SlipType.entries
+                            .firstOrNull { t -> t.name == it.type }
+                        val description = it.description?.trim()
+                        if (type != null && !description.isNullOrEmpty()) {
+                            SlipReport(type, description)
+                        } else {
+                            null
+                        }
+                    }
                     TeacherResult.Success(
                         AnswerCorrection(
                             // Con errores no puede contar como correcta.
@@ -294,6 +319,7 @@ class GeminiRepository @Inject constructor(
                             correctedAnswer = corrected,
                             explanation = explanation,
                             errors = errors,
+                            slips = slips,
                         )
                     )
                 }
@@ -818,7 +844,10 @@ class GeminiRepository @Inject constructor(
         val correctedAnswer: String?,
         val explanation: String?,
         val errors: List<ErrorJson>?,
+        val slips: List<SlipJson>?,
     )
+
+    private class SlipJson(val type: String?, val description: String?)
 
     private class ErrorJson(val conceptId: String?, val description: String?)
 
@@ -854,14 +883,17 @@ class GeminiRepository @Inject constructor(
         // are mentioned, so nothing is hidden, but they do not count.
         const val MINOR_SLIPS_RULE =
             "Los despistes de escritura NO son errores: puntuación " +
-                "(punto final, comas, signos), guiones, mayúsculas, " +
-                "espacios, comillas o apóstrofos tipográficos, y una " +
-                "letra cambiada, repetida o comida por despiste cuando " +
-                "no forma otra palabra ni cambia la gramática. No van " +
-                "en «errors» ni hacen falsa «isCorrect»; menciónalos al " +
-                "final de «explanation» como «Detalle de escritura». Sí " +
-                "son errores las tildes que faltan o sobran y cualquier " +
-                "fallo de gramática, vocabulario o concordancia."
+                "(PUNCTUATION: punto final, comas, signos), guiones " +
+                "(HYPHEN), mayúsculas (CAPITALS), espacios (SPACING), " +
+                "comillas o apóstrofos tipográficos (QUOTES) y una letra " +
+                "cambiada, repetida o comida por despiste cuando no " +
+                "forma otra palabra ni cambia la gramática (LETTER). No " +
+                "van en «errors» ni hacen falsa «isCorrect»: van en " +
+                "«slips», uno por tipo, con una descripción breve en " +
+                "castellano, y no los menciones en «explanation» porque " +
+                "la app los comenta aparte. Sí son errores las tildes " +
+                "que faltan o sobran y cualquier fallo de gramática, " +
+                "vocabulario o concordancia."
         const val LOG_EXCERPT = 1000
         const val MIN_LINES = 6
         const val MAX_LINES = 10
